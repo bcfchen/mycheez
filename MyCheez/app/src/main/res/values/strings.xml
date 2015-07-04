@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MyCheez</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- <string name="facebook_app_id">1510217342567748</string> -->
+
+
+    <!-- Amits -->
+    <string name="facebook_app_id">1542006186029486</string>
+    <string name="login_intro">Test login</string>
+    <string name="login">Sign in</string>
+    <string name="logout">Logout Out</string>
+
+    <integer name="initialCheeseCount">20</integer>
+
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_main_page">MainPageActivity</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="cheezTitle">mycheez</string>
+    <string name="com_parse_ui_facebook_login_button_label">Log in with Facebook</string>
+
+    <!-- LoginActivity -->
+    <string name="signing_in_message">Signing in</string>
+    <string name="prep_steal_zone_message">Preparing Steal Zone</string>
+    <string name="update_type">UpdateType</string>
+    <string name="login_failed_message">Something went wrong. Please launch MyCheez again</string>
+
+    <!-- TheftActivity -->
+    <string name="cheese_theft_message">stole your cheese</string>
+    <string name="cheese_theft_failed_message">Oh oh! Someone else got the last cheese!</string>
+    <string name="refresh_finished_message">Finished Updating!</string>
+
+    <!-- FlyingCheeseActivity -->
+    <string name="thief_facebookId">thiefFacebookId</string>
+    <string name="victim_facebookId">victimFacebookId</string>
+
+    <!-- RankingsActivity -->
+    <string name="rankings_page_title">RANKING</string>
+
+    <!-- Info messages -->
+    <string name="no_network_message">No network detected, switching to offline mode</string>
+    <string name="title_activity_flying_cheese">FlyingCheeseActivity</string>
+    <string name="title_activity_rankings">RankingsActivity</string>
+
+</resources>
