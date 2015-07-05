@@ -37,8 +37,8 @@ import android.widget.Toast;
 //import com.parse.ParseUser;
 //import com.parse.SaveCallback;
 import com.mycheez.R;
-//import com.stealthecheese.application.StealTheCheeseApplication;
-//import com.stealthecheese.enums.UpdateType;
+import com.mycheez.application.MyCheezApplication;
+import com.mycheez.enums.UpdateType;
 
 public class LoginActivity extends Activity {
 
