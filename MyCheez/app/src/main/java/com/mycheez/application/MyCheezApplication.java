@@ -2,6 +2,7 @@ package com.mycheez.application;
 
 import android.app.Application;
 
+import com.facebook.FacebookSdk;
 import com.firebase.client.Firebase;
 
 /**
@@ -20,7 +21,8 @@ public class MyCheezApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // setup Firebase
+        // setup Firebase and Facebook
+        FacebookSdk.sdkInitialize(this);
         Firebase.setAndroidContext(this);
 
         // TODO: move to string.xml firebase url
