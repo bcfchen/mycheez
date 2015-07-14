@@ -27,18 +27,10 @@ import android.widget.Toast;
 //import com.facebook.Request;
 //import com.facebook.Response;
 //import com.facebook.model.GraphUser;
-//import com.parse.FunctionCallback;
-//import com.parse.LogInCallback;
-//import com.parse.ParseCloud;
-//import com.parse.ParseException;
-//import com.parse.ParseFacebookUtils;
-//import com.parse.ParseInstallation;
-//import com.parse.ParseObject;
-//import com.parse.ParseUser;
-//import com.parse.SaveCallback;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
+import com.facebook.login.widget.LoginButton;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -50,7 +42,7 @@ import com.mycheez.enums.UpdateType;
 public class LoginActivity extends Activity {
 
     private TextView loadingText;
-    private Button loginFBButton;
+    private LoginButton loginFBButton;
     private double timeLeft = 0d;
     private Firebase firebaseRef;
     private CallbackManager mFacebookCallbackManager;
@@ -62,12 +54,13 @@ public class LoginActivity extends Activity {
 
 
     private  LinearLayout loadingMsgSection;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        loginFBButton = (Button) findViewById(R.id.loginButton);
+        loginFBButton = (LoginButton) findViewById(R.id.loginButton);
         loginFBButton.setVisibility(View.GONE);
 
 
@@ -89,25 +82,15 @@ public class LoginActivity extends Activity {
             @Override
             public void onAnimationEnd(Animation arg0) {
                 /* check auth and decide to show login button or not */
-                AuthData authData = firebaseRef.getAuth();
-                if (authData != null) {
-                    // user authenticated with Firebase
-                } else {
+                    AuthData authData = firebaseRef.getAuth();
+                    if (authData != null) {
+                        // user authenticated with Firebase
+                    } else {
                     /* no user authenticated with Firebase
                      * so display login button */
-                    loginFBButton.setVisibility(View.VISIBLE);
-                    Animation animFade  = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
-                    loginFBButton.startAnimation(animFade);
-//                    loginFBButton.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            hideLoginButton();
-//                            String signinMsg = getResources().getString(R.string.signing_in_message);
-//                            showLoadingMsgSection(signinMsg);
-//                            loginToFBAndCreateUser();
-//                        }
-//                    });
-                }
+                        loginFBButton.setVisibility(View.VISIBLE);
+                        Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
+                        loginFBButton.startAnimation(animFade);
 
 
                 //checkNetworkAvailability();
@@ -133,18 +116,33 @@ public class LoginActivity extends Activity {
 //                            loginToFBAndCreateUser();
 //                        }
 //                    });
-//                }
+                }
             }
         });
-        LinearLayout titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
-        titleContainer.startAnimation(animTranslate);
+            LinearLayout titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
+            titleContainer.startAnimation(animTranslate);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     private void initialize(){
         // initialize Firebase reference
         firebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com");
-        initializeFirebaseAuth();
-        initializeFacebookLogin();
+            initializeFirebaseAuth();
+            initializeFacebookLogin();
     }
 
     private void initializeFirebaseAuth(){
@@ -164,7 +162,11 @@ public class LoginActivity extends Activity {
         mFacebookAccessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
-                LoginActivity.this.onFacebookAccessTokenChange(currentAccessToken);
+               try {
+                   onFacebookAccessTokenChange(currentAccessToken);
+               } catch (Exception ex){
+                   String asdf = ex.getMessage();
+               }
             }
         };
     }
@@ -210,11 +212,11 @@ public class LoginActivity extends Activity {
             /* Hide all the login buttons */
             loginFBButton.setVisibility(View.GONE);
             // START THEFT ACTIVITY HERE!!
-            startTheftActivity();
+            //startTheftActivity();
 
         } else {
             /* No authenticated user show all the login buttons */
-            loginFBButton.setVisibility(View.VISIBLE);
+            //loginFBButton.setVisibility(View.VISIBLE);
         }
         this.mAuthData = authData;
         /* invalidate options menu to hide/show the logout button */
@@ -244,102 +246,6 @@ public class LoginActivity extends Activity {
         }
     }
 
-    private void loginToFBAndCreateUser() {
-
-        List<String> permissions = Arrays.asList("public_profile", "user_friends");
-//        ParseFacebookUtils.logIn(permissions, this, new LogInCallback() {
-//            @Override
-//            public void done(ParseUser user, ParseException err) {
-//                if(err != null){
-//                    Log.e(StealTheCheeseApplication.LOG_TAG, "Error in creating new user", err);
-//                    hideLoadingMsgSection();
-//                    showLoginButton();
-//                }
-//                if (user == null) {
-//                    Log.i(StealTheCheeseApplication.LOG_TAG, "Uh oh. The user cancelled the Facebook login.");
-//                } else if (user.isNew()) {
-//                    Log.i(StealTheCheeseApplication.LOG_TAG, "User signed up and logged in through Facebook!");
-//                    getFBUserInfo();
-//                } else {
-//                    Log.i(StealTheCheeseApplication.LOG_TAG, "User logged in through Facebook!");
-//                    performCreateAndLogin(false);
-//                }
-//            }
-//        });
-
-    }
-
-    private void showLoginButton()
-    {
-        ViewGroup parentView = (ViewGroup) loginFBButton.getParent();
-        parentView.setVisibility(View.VISIBLE);
-    }
-
-    private void hideLoginButton()
-    {
-        ViewGroup parentView = (ViewGroup) loginFBButton.getParent();
-        parentView.setVisibility(View.GONE);
-    }
-
-    private void performCreateAndLogin(boolean isNewUser){
-        final Map<String,Object> params = new HashMap<String,Object>();
-        params.put("isNewUserFlag", isNewUser);
-
-//        ParseCloud.callFunctionInBackground("onLoginActivity", params, new FunctionCallback<List<ParseUser>>() {
-//
-//            @Override
-//            public void done(List<ParseUser>allUsersData, ParseException ex) {
-//                if (ex == null){
-//                    ParseUser.pinAllInBackground(StealTheCheeseApplication.PIN_TAG, allUsersData, new SaveCallback() {
-//
-//                        @Override
-//                        public void done(ParseException ex) {
-//                            if(ex == null){
-//                                ParseUser curr = ParseUser.getCurrentUser();
-//                                String fbId = (String)curr.get("facebookId");
-//                                ParseInstallation.getCurrentInstallation().put("facebookId", fbId);
-//                                ParseInstallation.getCurrentInstallation().saveInBackground();
-//                                updateCheeseCountData();
-//                            }else {
-//                                Log.e(StealTheCheeseApplication.LOG_TAG, "Error pinning", ex);
-//                            }
-//
-//                        }
-//                    });
-//
-//                }else {
-//                    Log.e(StealTheCheeseApplication.LOG_TAG, "Error fetching data from cloud code: " , ex);
-//                    Toast loginFailedToast = Toast.makeText(getApplicationContext(), R.string.login_failed_message, Toast.LENGTH_LONG);
-//                    loginFailedToast.setGravity(Gravity.CENTER, 0, 0);
-//                    loginFailedToast.show();
-//                }
-//            }
-//        });
-    }
-
-    private void getFBUserInfo() {
-//        loadingText.setText("Getting user profile info...");
-//        final ParseUser loggedInUser = ParseUser.getCurrentUser();
-//        Request request = Request.newMeRequest(ParseFacebookUtils.getSession(), new Request.GraphUserCallback() {
-//            @Override
-//            public void onCompleted(GraphUser user, Response response) {
-//                loggedInUser.put("facebookId", user.getId());
-//                loggedInUser.put("firstName", user.getFirstName());
-//                loggedInUser.put("lastName", user.getLastName());
-//                // Use ProfilePictureView if needed for UI
-//                loggedInUser.put("profilePicUrl", String.format(StealTheCheeseApplication.PROFILE_PIC_URL, user.getId()));
-//                loggedInUser.saveInBackground(new SaveCallback() {
-//
-//                    @Override
-//                    public void done(ParseException parseexception) {
-//                        performCreateAndLogin(true);
-//                    }
-//                });
-//            }
-//        });
-//        request.executeAsync();
-
-    }
 
 
     private void updateCheeseCountData(){
@@ -402,9 +308,9 @@ public class LoginActivity extends Activity {
 
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-//        ParseFacebookUtils.finishAuthentication(requestCode, resultCode, data);
-    }
-
+            /* Otherwise, it's probably the request by the Facebook login button, keep track of the session */
+            mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
+        }
 }

@@ -15,17 +15,13 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true">
-        <Button
+        <com.facebook.login.widget.LoginButton
             android:id="@+id/loginButton"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/button_login"
             android:text="@string/login"
-            android:textColor="#fff"
-            android:textStyle="bold" />
+            android:textStyle="bold"/>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/loadingMsgSection"
