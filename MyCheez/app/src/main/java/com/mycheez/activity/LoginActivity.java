@@ -1,43 +1,27 @@
 package com.mycheez.activity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-//import com.facebook.Request;
-//import com.facebook.Response;
-//import com.facebook.model.GraphUser;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
+import com.facebook.FacebookSdk;
 import com.facebook.login.widget.LoginButton;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.mycheez.R;
-import com.mycheez.application.MyCheezApplication;
-import com.mycheez.enums.UpdateType;
-
 
 public class LoginActivity extends Activity {
 
@@ -59,7 +43,6 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
         loginFBButton = (LoginButton) findViewById(R.id.loginButton);
         loginFBButton.setVisibility(View.GONE);
 
@@ -91,31 +74,6 @@ public class LoginActivity extends Activity {
                         loginFBButton.setVisibility(View.VISIBLE);
                         Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
                         loginFBButton.startAnimation(animFade);
-
-
-                //checkNetworkAvailability();
-//                ParseUser currentUser = ParseUser.getCurrentUser();
-//
-//                if ((currentUser != null) && ParseFacebookUtils.isLinked(currentUser)) {
-//                    // user exists
-//                    String stealZoneMsg = getResources().getString(R.string.prep_steal_zone_message);
-//                    showLoadingMsgSection(stealZoneMsg);
-//                    performCreateAndLogin(false);
-//
-//                } else {
-//                    // user does not exists
-//                    loginFBButton.setVisibility(View.VISIBLE);
-//                    Animation animFade  = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
-//                    loginFBButton.startAnimation(animFade);
-//                    loginFBButton.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            hideLoginButton();
-//                            String signinMsg = getResources().getString(R.string.signing_in_message);
-//                            showLoadingMsgSection(signinMsg);
-//                            loginToFBAndCreateUser();
-//                        }
-//                    });
                 }
             }
         });
@@ -162,11 +120,7 @@ public class LoginActivity extends Activity {
         mFacebookAccessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
-               try {
-                   onFacebookAccessTokenChange(currentAccessToken);
-               } catch (Exception ex){
-                   String asdf = ex.getMessage();
-               }
+                onFacebookAccessTokenChange(currentAccessToken);
             }
         };
     }
@@ -191,7 +145,6 @@ public class LoginActivity extends Activity {
         public void onAuthenticationError(FirebaseError firebaseError) {
         }
     }
-
     private void onFacebookAccessTokenChange(AccessToken token) {
         if (token != null) {
             firebaseRef.authWithOAuthToken("facebook", token.getToken(), new AuthResultHandler("facebook"));
@@ -212,7 +165,7 @@ public class LoginActivity extends Activity {
             /* Hide all the login buttons */
             loginFBButton.setVisibility(View.GONE);
             // START THEFT ACTIVITY HERE!!
-            //startTheftActivity();
+            startTheftActivity();
 
         } else {
             /* No authenticated user show all the login buttons */
@@ -247,70 +200,17 @@ public class LoginActivity extends Activity {
     }
 
 
-
-    private void updateCheeseCountData(){
-        final Map<String,Object> params = new HashMap<String,Object>();
-//        ParseCloud.callFunctionInBackground("getAllCheeseCounts", params, new FunctionCallback<HashMap<String, Object>>() {
-//
-//            @Override
-//            public void done(HashMap<String, Object> wrapper, ParseException ex) {
-//                if(ex == null){
-//                    if(wrapper.containsKey("countDown")){
-//                        timeLeft = (Double)wrapper.get("countDown");
-//                        timeLeft +=100; //buffer time
-//                    }
-//
-//                    List<HashMap<String, Object>> cheeseCounts = (List<HashMap<String, Object>>)wrapper.get("cheeseCountList");
-//                    List<ParseObject> allCountList = new ArrayList<ParseObject>();
-//                    for(HashMap<String, Object> eachCount : cheeseCounts){
-//
-//                        String friendFacebookId = (String)eachCount.get("facebookId");
-//                        int cheeseCount = (Integer)eachCount.get("cheeseCount");
-//                        boolean showMe = (Boolean)eachCount.get("showMe");
-//                        boolean animateMe = (Boolean)eachCount.get("animateMe");
-//
-//                        ParseObject tempObject = new ParseObject("cheeseCountObj");
-//                        tempObject.put("facebookId", friendFacebookId);
-//                        tempObject.put("cheeseCount", cheeseCount);
-//                        tempObject.put("showMe", showMe);
-//                        tempObject.put("animateMe", animateMe);
-//
-//                        allCountList.add(tempObject);
-//                    }
-//
-//                    ParseObject.pinAllInBackground(StealTheCheeseApplication.PIN_TAG, allCountList, new SaveCallback() {
-//                        @Override
-//                        public void done(ParseException ex) {
-//                            startTheftActivity();
-//
-//                        }
-//                    });
-//                }
-//            }
-//        });
-    }
-
-
-
-    /**
-     * TODO : FIX ME !!!
-     */
     private void startTheftActivity() {
-//        Intent intent = new Intent(LoginActivity.this, TheftActivity.class);
-//        // removing this activity from backstack
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        String updateType = getResources().getString(R.string.update_type);
-//        intent.putExtra(updateType, UpdateType.LOGIN);
+        Intent intent = new Intent(LoginActivity.this, TheftActivity.class);
 //        intent.putExtra("CountDown", timeLeft);
-//        startActivity(intent);
-//        finish();
+        startActivity(intent);
+        finish();
     }
 
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-            /* Otherwise, it's probably the request by the Facebook login button, keep track of the session */
             mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
         }
 }
