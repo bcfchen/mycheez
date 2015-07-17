@@ -16,6 +16,8 @@ public class MyCheezApplication extends Application {
     public static final String FRIEND_HISTORY_PIC_URL = "https://graph.facebook.com/%S/picture?type=small";
     private static boolean activityRunning;
     private static boolean activityPaused;
+    private static Firebase rootFirebaseRef;
+
 
     @Override
     public void onCreate() {
@@ -25,9 +27,13 @@ public class MyCheezApplication extends Application {
         FacebookSdk.sdkInitialize(this);
         Firebase.setAndroidContext(this);
 
-        // TODO: move to string.xml firebase url
-        //Firebase rootRef = new Firebase("https://torrid-inferno-8611.firebaseio.com/TODO");
+        rootFirebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com");
      }
+
+
+    public static Firebase getRootFirebaseRef() {
+        return rootFirebaseRef;
+    }
 
     public static boolean isActivityRunning() {
         return activityRunning;

@@ -22,6 +22,7 @@ import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.mycheez.R;
+import com.mycheez.application.MyCheezApplication;
 
 public class LoginActivity extends Activity {
 
@@ -82,25 +83,16 @@ public class LoginActivity extends Activity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    private void initialize(){
+    private void initialize() {
         // initialize Firebase reference
-        firebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com");
-            initializeFirebaseAuth();
-            initializeFacebookLogin();
+        firebaseRef = MyCheezApplication.getRootFirebaseRef();
+        initializeFirebaseAuth();
+        initializeFacebookLogin();
     }
 
     private void initializeFirebaseAuth(){
@@ -125,26 +117,7 @@ public class LoginActivity extends Activity {
         };
     }
 
-    /**
-     * Utility class for authentication results
-     */
-    private class AuthResultHandler implements Firebase.AuthResultHandler {
 
-        private final String provider;
-
-        public AuthResultHandler(String provider) {
-            this.provider = provider;
-        }
-
-        @Override
-        public void onAuthenticated(AuthData authData) {
-            setAuthenticatedUser(authData);
-        }
-
-        @Override
-        public void onAuthenticationError(FirebaseError firebaseError) {
-        }
-    }
     private void onFacebookAccessTokenChange(AccessToken token) {
         if (token != null) {
             firebaseRef.authWithOAuthToken("facebook", token.getToken(), new AuthResultHandler("facebook"));
@@ -163,9 +136,9 @@ public class LoginActivity extends Activity {
     private void setAuthenticatedUser(AuthData authData) {
         if (authData != null) {
             /* Hide all the login buttons */
-            loginFBButton.setVisibility(View.GONE);
+            //loginFBButton.setVisibility(View.GONE);
             // START THEFT ACTIVITY HERE!!
-            startTheftActivity();
+          //  startTheftActivity();
 
         } else {
             /* No authenticated user show all the login buttons */
@@ -176,16 +149,46 @@ public class LoginActivity extends Activity {
         //supportInvalidateOptionsMenu();
     }
 
-    private void showLoadingMsgSection(String message)
-    {
+
+
+    /**
+     * Utility class for authentication results
+     */
+    private class AuthResultHandler implements Firebase.AuthResultHandler {
+
+        private final String provider;
+
+        public AuthResultHandler(String provider) {
+
+            this.provider = provider;
+        }
+
+        @Override
+        public void onAuthenticated(AuthData authData) {
+
+            setAuthenticatedUser(authData);
+        }
+
+        @Override
+        public void onAuthenticationError(FirebaseError firebaseError) {
+            int i = 2;
+            System.out.println("See me");
+        }
+    }
+
+
+
+
+
+    private void showLoadingMsgSection(String message) {
         loadingMsgSection.setVisibility(View.VISIBLE);
         Animation animFade  = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
         loadingMsgSection.startAnimation(animFade);
         loadingText.setText(message);
     }
 
-    private void hideLoadingMsgSection()
-    {
+    private void hideLoadingMsgSection() {
+
         loadingMsgSection.setVisibility(View.GONE);
     }
 
@@ -208,9 +211,5 @@ public class LoginActivity extends Activity {
     }
 
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-            mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
-        }
+
 }
