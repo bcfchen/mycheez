@@ -11,6 +11,7 @@ import com.mycheez.R;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.enums.UpdateType;
 import com.mycheez.util.AnimationHandler;
+import com.mycheez.util.AuthenticationHelper;
 import com.mycheez.util.CircularImageView;
 
 public class TheftActivity extends Activity {
@@ -20,14 +21,16 @@ public class TheftActivity extends Activity {
 	ImageView rankingsImageView;
 	private AnimationHandler animationHandler;
 	private UpdateType updateType;
-
+	private AuthenticationHelper authHelper;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_theft);
-
+		Bundle extras = getIntent().getExtras();
+		String authUid = extras.getString("authenticationUid");
+		authHelper = new AuthenticationHelper(authUid);
 		initializeUtilities();
 		initializeUIControls();
 		updateType = UpdateType.LOGIN;

@@ -202,10 +202,9 @@ public class LoginActivity extends Activity {
         }
     }
 
-
     private void startTheftActivity() {
         Intent intent = new Intent(LoginActivity.this, TheftActivity.class);
-//        intent.putExtra("CountDown", timeLeft);
+        intent.putExtra("authenticationUid", mAuthData.getUid());
         startActivity(intent);
         finish();
     }
