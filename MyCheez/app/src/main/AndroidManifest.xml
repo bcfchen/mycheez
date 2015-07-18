@@ -21,6 +21,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.TheftActivity"
+            android:label="@string/title_activity_main_page"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar" >
+        </activity>
+
         <activity android:name="com.facebook.FacebookActivity" />
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"

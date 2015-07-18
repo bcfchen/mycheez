@@ -136,9 +136,9 @@ public class LoginActivity extends Activity {
     private void setAuthenticatedUser(AuthData authData) {
         if (authData != null) {
             /* Hide all the login buttons */
-            //loginFBButton.setVisibility(View.GONE);
+            loginFBButton.setVisibility(View.GONE);
             // START THEFT ACTIVITY HERE!!
-          //  startTheftActivity();
+            startTheftActivity();
 
         } else {
             /* No authenticated user show all the login buttons */
