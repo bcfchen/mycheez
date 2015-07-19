@@ -8,21 +8,23 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
-import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
 import com.facebook.login.widget.LoginButton;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.mycheez.R;
 import com.mycheez.application.MyCheezApplication;
+
+import java.util.Date;
 
 public class LoginActivity extends Activity {
 
@@ -36,7 +38,7 @@ public class LoginActivity extends Activity {
     /* Data from the authenticated user */
     private AuthData mAuthData;
     private Firebase.AuthStateListener mAuthStateListener;
-
+    private LinearLayout titleContainer;
 
     private  LinearLayout loadingMsgSection;
 
@@ -52,34 +54,10 @@ public class LoginActivity extends Activity {
         loadingMsgSection.setVisibility(View.GONE);
 
         loadingText = (TextView) findViewById(R.id.loadingText);
+        titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
+
         initialize();
 
-        Animation animTranslate  = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.translate);
-        animTranslate.setAnimationListener(new AnimationListener() {
-
-            @Override
-            public void onAnimationStart(Animation arg0) { }
-
-            @Override
-            public void onAnimationRepeat(Animation arg0) { }
-
-            @Override
-            public void onAnimationEnd(Animation arg0) {
-                /* check auth and decide to show login button or not */
-                    AuthData authData = firebaseRef.getAuth();
-                    if (authData != null) {
-                        // user authenticated with Firebase
-                    } else {
-                    /* no user authenticated with Firebase
-                     * so display login button */
-                        loginFBButton.setVisibility(View.VISIBLE);
-                        Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
-                        loginFBButton.startAnimation(animFade);
-                }
-            }
-        });
-            LinearLayout titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
-            titleContainer.startAnimation(animTranslate);
     }
 
     @Override
@@ -87,6 +65,38 @@ public class LoginActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
     }
+
+
+    private void doLoginAnimation(){
+
+        Animation animTranslate  = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.translate);
+        animTranslate.setAnimationListener(new Animation.AnimationListener() {
+
+            @Override
+            public void onAnimationStart(Animation arg0) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation arg0) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation arg0) {
+                if (mAuthData != null) {
+                    setAuthenticatedUser();
+                } else {
+                    /* no user authenticated with Firebase
+                     * so display login button */
+                    LoginManager.getInstance().logOut();
+                    loginFBButton.setVisibility(View.VISIBLE);
+                    Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
+                    loginFBButton.startAnimation(animFade);
+                }
+            }
+        });
+        titleContainer.startAnimation(animTranslate);
+    }
+
 
     private void initialize() {
         // initialize Firebase reference
@@ -99,8 +109,10 @@ public class LoginActivity extends Activity {
         mAuthStateListener = new Firebase.AuthStateListener() {
             @Override
             public void onAuthStateChanged(AuthData authData) {
-                setAuthenticatedUser(authData);
-            }
+                Toast.makeText(LoginActivity.this, "I am getting called", Toast.LENGTH_LONG).show();
+                mAuthData = authData;
+                doLoginAnimation();
+             }
         };
         /* Check if the user is authenticated with Firebase already. If this is the case we can set the authenticated
          * user and hide hide any login buttons */
@@ -120,12 +132,12 @@ public class LoginActivity extends Activity {
 
     private void onFacebookAccessTokenChange(AccessToken token) {
         if (token != null) {
+            System.out.println("About to call : " + new Date());
             firebaseRef.authWithOAuthToken("facebook", token.getToken(), new AuthResultHandler("facebook"));
         } else {
             // Logged out of Facebook and currently authenticated with Firebase using Facebook, so do a logout
             if (this.mAuthData != null && this.mAuthData.getProvider().equals("facebook")) {
                 firebaseRef.unauth();
-                setAuthenticatedUser(null);
             }
         }
     }
@@ -133,20 +145,12 @@ public class LoginActivity extends Activity {
     /**
      * Once a user is logged in, take the mAuthData provided from Firebase and "use" it.
      */
-    private void setAuthenticatedUser(AuthData authData) {
-        if (authData != null) {
-            /* Hide all the login buttons */
-            loginFBButton.setVisibility(View.GONE);
-            // START THEFT ACTIVITY HERE!!
-            startTheftActivity();
-
-        } else {
-            /* No authenticated user show all the login buttons */
-            //loginFBButton.setVisibility(View.VISIBLE);
+    private void setAuthenticatedUser() {
+        if(mAuthData !=null) {
+            // Update firebase with latest timstamp for this user, and update fb graph api call..
+            // move to theft activity..
         }
-        this.mAuthData = authData;
-        /* invalidate options menu to hide/show the logout button */
-        //supportInvalidateOptionsMenu();
+
     }
 
 
@@ -165,14 +169,16 @@ public class LoginActivity extends Activity {
 
         @Override
         public void onAuthenticated(AuthData authData) {
-
-            setAuthenticatedUser(authData);
+           // mAuthData = authData;
+            //setAuthenticatedUser(authData);
+            // TODO: Log to say authenitcated fine..
         }
 
         @Override
         public void onAuthenticationError(FirebaseError firebaseError) {
             int i = 2;
             System.out.println("See me");
+            // TODO: Log to say authenitcated fine..
         }
     }
 
@@ -205,8 +211,8 @@ public class LoginActivity extends Activity {
     private void startTheftActivity() {
         Intent intent = new Intent(LoginActivity.this, TheftActivity.class);
         intent.putExtra("authenticationUid", mAuthData.getUid());
-        startActivity(intent);
-        finish();
+        //startActivity(intent);
+       // finish();
     }
 
 
