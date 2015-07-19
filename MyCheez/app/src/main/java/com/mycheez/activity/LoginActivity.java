@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -39,25 +40,14 @@ public class LoginActivity extends Activity {
     private AuthData mAuthData;
     private Firebase.AuthStateListener mAuthStateListener;
     private LinearLayout titleContainer;
-
     private  LinearLayout loadingMsgSection;
+    private String TAG = "loginActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        loginFBButton = (LoginButton) findViewById(R.id.loginButton);
-        loginFBButton.setVisibility(View.GONE);
-
-
-        loadingMsgSection = (LinearLayout) findViewById(R.id.loadingMsgSection);
-        loadingMsgSection.setVisibility(View.GONE);
-
-        loadingText = (TextView) findViewById(R.id.loadingText);
-        titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
-
         initialize();
-
     }
 
     @Override
@@ -99,10 +89,21 @@ public class LoginActivity extends Activity {
 
 
     private void initialize() {
+        // initialize layouts
+        initializeUIComponents();
         // initialize Firebase reference
         firebaseRef = MyCheezApplication.getRootFirebaseRef();
         initializeFirebaseAuth();
         initializeFacebookLogin();
+    }
+
+    private void initializeUIComponents(){
+        loginFBButton = (LoginButton) findViewById(R.id.loginButton);
+        loginFBButton.setVisibility(View.GONE);
+        loadingMsgSection = (LinearLayout) findViewById(R.id.loadingMsgSection);
+        loadingMsgSection.setVisibility(View.GONE);
+        loadingText = (TextView) findViewById(R.id.loadingText);
+        titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
     }
 
     private void initializeFirebaseAuth(){
@@ -153,8 +154,6 @@ public class LoginActivity extends Activity {
 
     }
 
-
-
     /**
      * Utility class for authentication results
      */
@@ -169,22 +168,14 @@ public class LoginActivity extends Activity {
 
         @Override
         public void onAuthenticated(AuthData authData) {
-           // mAuthData = authData;
-            //setAuthenticatedUser(authData);
-            // TODO: Log to say authenitcated fine..
+            Log.i(TAG, "authentication success");
         }
 
         @Override
         public void onAuthenticationError(FirebaseError firebaseError) {
-            int i = 2;
-            System.out.println("See me");
-            // TODO: Log to say authenitcated fine..
+            Log.e(TAG, "authentication failed");
         }
     }
-
-
-
-
 
     private void showLoadingMsgSection(String message) {
         loadingMsgSection.setVisibility(View.VISIBLE);
