@@ -19,7 +19,8 @@ public class AuthenticationHelper {
     }
 
     private String uidToId(String uid){
-        return uid.substring(uid.indexOf(":"), uid.length());
+        return "10104704492062016";
+        //return uid.substring(uid.indexOf(":"), uid.length());
     }
 
 

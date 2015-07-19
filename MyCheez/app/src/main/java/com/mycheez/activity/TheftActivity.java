@@ -2,17 +2,28 @@ package com.mycheez.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.mycheez.R;
+import com.mycheez.adapter.UserViewAdapter;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.enums.UpdateType;
+import com.mycheez.model.User;
 import com.mycheez.util.AnimationHandler;
 import com.mycheez.util.AuthenticationHelper;
 import com.mycheez.util.CircularImageView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class TheftActivity extends Activity {
 	CircularImageView userProfileImageView;
@@ -22,6 +33,11 @@ public class TheftActivity extends Activity {
 	private AnimationHandler animationHandler;
 	private UpdateType updateType;
 	private AuthenticationHelper authHelper;
+	private Firebase mFirebaseRef;
+	private User currentUser;
+	private String TAG = "theftActivity";
+    private UserViewAdapter userViewAdapter;
+    private ObjectMapper mapper;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +49,12 @@ public class TheftActivity extends Activity {
 		authHelper = new AuthenticationHelper(authUid);
 		initializeUtilities();
 		initializeUIControls();
+		setupFirebaseBindings(authHelper.getId());
 		updateType = UpdateType.LOGIN;
 	}
 
 	private void initializeUtilities() {
+        mapper = new ObjectMapper();
 		this.animationHandler = new AnimationHandler(this);
 	}
 
@@ -46,7 +64,23 @@ public class TheftActivity extends Activity {
             super.onBackPressed();
     }
 
+	/* setup firebase binding to update user data */
+	private void setupFirebaseBindings(final String authUid){
+		mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
+		// setup current user binding
+		mFirebaseRef.child("users").child(authUid).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.i(TAG, "users changed in Firebase");
+                currentUser = mapper.convertValue(snapshot.getValue(), User.class);
+                populateUserView();
+            }
 
+            @Override
+            public void onCancelled(FirebaseError error) {
+            }
+        });
+	}
 
 	/* set display properties for user */
 	private void populateUserView()
@@ -54,10 +88,11 @@ public class TheftActivity extends Activity {
 		/* create adapter for user view */
 		userCheeseTextView = (TextView) findViewById(R.id.cheeseCountTextView);
 		userProfileImageView = (CircularImageView) findViewById(R.id.userProfileImageView);
+        userViewAdapter = new UserViewAdapter(this, userCheeseTextView, userProfileImageView);
 
 		/* set display values via adapter */
-//		userViewAdapter.setUser(userViewModel);
-	}
+        userViewAdapter.setUser(currentUser);
+    }
 
 
 	private void initializeUIControls()

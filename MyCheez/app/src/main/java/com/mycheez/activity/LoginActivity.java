@@ -32,7 +32,7 @@ public class LoginActivity extends Activity {
     private TextView loadingText;
     private LoginButton loginFBButton;
     private double timeLeft = 0d;
-    private Firebase firebaseRef;
+    private Firebase mFirebaseRef;
     private CallbackManager mFacebookCallbackManager;
     /* Used to track user logging in/out off Facebook */
     private AccessTokenTracker mFacebookAccessTokenTracker;
@@ -92,7 +92,7 @@ public class LoginActivity extends Activity {
         // initialize layouts
         initializeUIComponents();
         // initialize Firebase reference
-        firebaseRef = MyCheezApplication.getRootFirebaseRef();
+        mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
         initializeFirebaseAuth();
         initializeFacebookLogin();
     }
@@ -117,7 +117,7 @@ public class LoginActivity extends Activity {
         };
         /* Check if the user is authenticated with Firebase already. If this is the case we can set the authenticated
          * user and hide hide any login buttons */
-        firebaseRef.addAuthStateListener(mAuthStateListener);
+        mFirebaseRef.addAuthStateListener(mAuthStateListener);
     }
 
     private void initializeFacebookLogin(){
@@ -134,11 +134,11 @@ public class LoginActivity extends Activity {
     private void onFacebookAccessTokenChange(AccessToken token) {
         if (token != null) {
             System.out.println("About to call : " + new Date());
-            firebaseRef.authWithOAuthToken("facebook", token.getToken(), new AuthResultHandler("facebook"));
+            mFirebaseRef.authWithOAuthToken("facebook", token.getToken(), new AuthResultHandler("facebook"));
         } else {
             // Logged out of Facebook and currently authenticated with Firebase using Facebook, so do a logout
             if (this.mAuthData != null && this.mAuthData.getProvider().equals("facebook")) {
-                firebaseRef.unauth();
+                mFirebaseRef.unauth();
             }
         }
     }
@@ -150,6 +150,7 @@ public class LoginActivity extends Activity {
         if(mAuthData !=null) {
             // Update firebase with latest timstamp for this user, and update fb graph api call..
             // move to theft activity..
+            startTheftActivity();
         }
 
     }
@@ -185,7 +186,6 @@ public class LoginActivity extends Activity {
     }
 
     private void hideLoadingMsgSection() {
-
         loadingMsgSection.setVisibility(View.GONE);
     }
 
@@ -202,8 +202,8 @@ public class LoginActivity extends Activity {
     private void startTheftActivity() {
         Intent intent = new Intent(LoginActivity.this, TheftActivity.class);
         intent.putExtra("authenticationUid", mAuthData.getUid());
-        //startActivity(intent);
-       // finish();
+        startActivity(intent);
+        finish();
     }
 
 

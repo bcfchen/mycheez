@@ -27,7 +27,7 @@ public class MyCheezApplication extends Application {
         FacebookSdk.sdkInitialize(this);
         Firebase.setAndroidContext(this);
 
-        rootFirebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com");
+        rootFirebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com/mycheez");
      }
 
 
