@@ -17,7 +17,7 @@ public class MyCheezApplication extends Application {
     private static boolean activityRunning;
     private static boolean activityPaused;
     private static Firebase rootFirebaseRef;
-
+    private static Firebase myCheezFirebaseRef;
 
     @Override
     public void onCreate() {
@@ -27,12 +27,18 @@ public class MyCheezApplication extends Application {
         FacebookSdk.sdkInitialize(this);
         Firebase.setAndroidContext(this);
 
-        rootFirebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com/mycheez");
+        rootFirebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com");
+        myCheezFirebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com/mycheez");
+
      }
 
 
     public static Firebase getRootFirebaseRef() {
         return rootFirebaseRef;
+    }
+
+    public static Firebase getMyCheezFirebaseRef() {
+        return myCheezFirebaseRef;
     }
 
     public static boolean isActivityRunning() {

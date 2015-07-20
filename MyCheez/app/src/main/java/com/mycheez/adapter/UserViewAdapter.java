@@ -1,16 +1,16 @@
 package com.mycheez.adapter;
 
-import com.mycheez.model.User;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Transformation;
-import com.mycheez.application.MyCheezApplication;
-import com.mycheez.util.CircleTransform;
-
 import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.mycheez.application.MyCheezApplication;
+import com.mycheez.model.User;
+import com.mycheez.util.CircleTransform;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 
 public class UserViewAdapter
 {

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,11 +18,7 @@ import com.mycheez.application.MyCheezApplication;
 import com.mycheez.enums.UpdateType;
 import com.mycheez.model.User;
 import com.mycheez.util.AnimationHandler;
-import com.mycheez.util.AuthenticationHelper;
 import com.mycheez.util.CircularImageView;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class TheftActivity extends Activity {
 	CircularImageView userProfileImageView;
@@ -32,7 +27,6 @@ public class TheftActivity extends Activity {
 	ImageView rankingsImageView;
 	private AnimationHandler animationHandler;
 	private UpdateType updateType;
-	private AuthenticationHelper authHelper;
 	private Firebase mFirebaseRef;
 	private User currentUser;
 	private String TAG = "theftActivity";
@@ -45,11 +39,10 @@ public class TheftActivity extends Activity {
 
 		setContentView(R.layout.activity_theft);
 		Bundle extras = getIntent().getExtras();
-		String authUid = extras.getString("authenticationUid");
-		authHelper = new AuthenticationHelper(authUid);
+		String facebookId = extras.getString("facebookId");
 		initializeUtilities();
 		initializeUIControls();
-		setupFirebaseBindings(authHelper.getId());
+		setupFirebaseBindings(facebookId);
 		updateType = UpdateType.LOGIN;
 	}
 
@@ -69,17 +62,17 @@ public class TheftActivity extends Activity {
 		mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
 		// setup current user binding
 		mFirebaseRef.child("users").child(authUid).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Log.i(TAG, "users changed in Firebase");
-                currentUser = mapper.convertValue(snapshot.getValue(), User.class);
-                populateUserView();
-            }
+			@Override
+			public void onDataChange(DataSnapshot snapshot) {
+				Log.i(TAG, "users changed in Firebase");
+				currentUser = mapper.convertValue(snapshot.getValue(), User.class);
+				populateUserView();
+			}
 
-            @Override
-            public void onCancelled(FirebaseError error) {
-            }
-        });
+			@Override
+			public void onCancelled(FirebaseError error) {
+			}
+		});
 	}
 
 	/* set display properties for user */
