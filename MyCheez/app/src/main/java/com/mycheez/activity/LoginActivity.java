@@ -81,6 +81,7 @@ public class LoginActivity extends Activity {
     private void initializeUIComponents(){
         loginFBButton = (LoginButton) findViewById(R.id.loginButton);
         loginFBButton.setVisibility(View.GONE);
+        loginFBButton.setReadPermissions(Arrays.asList("public_profile", "user_friends"));
         loadingMsgSection = (LinearLayout) findViewById(R.id.loadingMsgSection);
         loadingMsgSection.setVisibility(View.GONE);
         loadingText = (TextView) findViewById(R.id.loadingText);
@@ -110,7 +111,6 @@ public class LoginActivity extends Activity {
                 onFacebookAccessTokenChange(currentAccessToken);
             }
         };
-        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "user_friends"));
     }
 
 

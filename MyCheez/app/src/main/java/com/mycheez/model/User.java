@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.firebase.client.ServerValue;
 import com.mycheez.application.MyCheezApplication;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class User {
     private int cheeseCount = 50;   // default cheese count
     private Date createdAt;
     private String firstName;
-    private List<String> friends;
+    private List<String> friends = new ArrayList<>();
     private Boolean isOnline;
     private String lastName;
     private String profilePicUrl;
