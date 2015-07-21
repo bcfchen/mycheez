@@ -46,7 +46,7 @@ public class TheftActivity extends Activity {
 		String facebookId = extras.getString("facebookId");
 		initializeUtilities();
 		initializeUIControls();
-        setupFirebaseBindings(facebookId);
+		setupUserFirebaseBindings(facebookId);
         initializePlayersList();
 		updateType = UpdateType.LOGIN;
 	}
@@ -62,39 +62,50 @@ public class TheftActivity extends Activity {
     }
 
 	/* setup firebase binding to update user data */
-	private void setupFirebaseBindings(final String authUid){
+	private void setupUserFirebaseBindings(final String authUid){
 		mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
-		// setup current user binding
-		mFirebaseRef.child("users").child(authUid).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Log.i(TAG, "users changed in Firebase");
-                currentUser = snapshot.getValue(User.class);
-                populateUserView();
-            }
+		// make single call to retrieve info for current user once
+		mFirebaseRef.child("users").child(authUid).addListenerForSingleValueEvent(new ValueEventListener() {
+			@Override
+			public void onDataChange(DataSnapshot snapshot) {
+				Log.i(TAG, "user loaded from Firebase");
+				currentUser = snapshot.getValue(User.class);
+				userViewAdapter.setUser(currentUser);
+			}
 
-            @Override
-            public void onCancelled(FirebaseError error) {
-            }
-        });
+			@Override
+			public void onCancelled(FirebaseError error) {
+			}
+		});
+
+		// bind cheese count
+		mFirebaseRef.child("users").child(authUid).child("cheeseCount").addValueEventListener(new ValueEventListener() {
+			@Override
+			public void onDataChange(DataSnapshot snapshot) {
+				Log.i(TAG, "cheese count changed in Firebase");
+				int updatedCheeseCount = snapshot.getValue(int.class);
+				userViewAdapter.setCheeseCount(updatedCheeseCount);
+			}
+
+			@Override
+			public void onCancelled(FirebaseError firebaseError) {
+
+			}
+		});
 	}
 
-	/* set display properties for user */
-	private void populateUserView()
-    {
+    
+	private void initializeUIControls()
+	{
+		initializeUserView();
+		initializeImageButtons();
+	}
+
+	private void initializeUserView(){
 		/* create adapter for user view */
 		userCheeseTextView = (TextView) findViewById(R.id.cheeseCountTextView);
 		userProfileImageView = (CircularImageView) findViewById(R.id.userProfileImageView);
-        userViewAdapter = new UserViewAdapter(this, userCheeseTextView, userProfileImageView);
-
-		/* set display values via adapter */
-        userViewAdapter.setUser(currentUser);
-    }
-
-
-	private void initializeUIControls()
-	{
-		initializeImageButtons();
+		userViewAdapter = new UserViewAdapter(this, userCheeseTextView, userProfileImageView);
 	}
 
 	/* hook up image button clicks */
@@ -112,14 +123,14 @@ public class TheftActivity extends Activity {
 		/* hook up rankings button to fetch ranking info from Parse and populate views */
 		rankingsImageView = (ImageView)findViewById(R.id.rankingImageView);
 		rankingsImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+			@Override
+			public void onClick(View v) {
 //				Intent intent = new Intent(TheftActivity.this, RankingsActivity.class);
 //				updateType = UpdateType.NOUPDATE;
 //				startActivity(intent);
-            }
+			}
 
-        });
+		});
 	}
 
     private void initializePlayersList(){
