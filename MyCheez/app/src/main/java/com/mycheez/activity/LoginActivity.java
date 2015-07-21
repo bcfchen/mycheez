@@ -74,7 +74,8 @@ public class LoginActivity extends Activity {
         initializeUIComponents();
         // initialize Firebase reference
         mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
-        initializeFirebaseAuth();
+//        initializeFirebaseAuth();
+        doLoginAnimation();
         initializeFacebookLogin();
     }
 
@@ -88,20 +89,20 @@ public class LoginActivity extends Activity {
         titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
     }
 
-    private void initializeFirebaseAuth(){
-        mAuthStateListener = new Firebase.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(AuthData authData) {
-                mAuthData = authData;
-                Log.i(TAG, "Auth data is : " + mAuthData);
-                Toast.makeText(LoginActivity.this, "I am getting called", Toast.LENGTH_LONG).show();
-                doLoginAnimation();
-             }
-        };
-        /* Check if the user is authenticated with Firebase already. If this is the case we can set the authenticated
-         * user and hide hide any login buttons */
-        mFirebaseRef.addAuthStateListener(mAuthStateListener);
-    }
+//    private void initializeFirebaseAuth(){
+//        mAuthStateListener = new Firebase.AuthStateListener() {
+//            @Override
+//            public void onAuthStateChanged(AuthData authData) {
+//                mAuthData = authData;
+//                Log.i(TAG, "Auth data is : " + mAuthData);
+//                Toast.makeText(LoginActivity.this, "I am getting called", Toast.LENGTH_LONG).show();
+//                doLoginAnimation();
+//             }
+//        };
+//        /* Check if the user is authenticated with Firebase already. If this is the case we can set the authenticated
+//         * user and hide hide any login buttons */
+//        mFirebaseRef.addAuthStateListener(mAuthStateListener);
+//    }
 
     private void initializeFacebookLogin(){
         mFacebookCallbackManager = CallbackManager.Factory.create();
@@ -128,6 +129,7 @@ public class LoginActivity extends Activity {
 
             @Override
             public void onAnimationEnd(Animation arg0) {
+                mAuthData = mFirebaseRef.getAuth();
                 if (mAuthData != null) {
                     setAuthenticatedUser();
                 } else {
@@ -177,7 +179,9 @@ public class LoginActivity extends Activity {
                         public void isUpsertSuccess(boolean isSuccess) {
                             Log.i(TAG, "Completed");
                             // Based on Success flag
-                            // Move to theftactivity or show some popup
+                            if (isSuccess){
+                                startTheftActivity();
+                            }
 
                         }
                     });
@@ -239,6 +243,10 @@ public class LoginActivity extends Activity {
         @Override
         public void onAuthenticated(AuthData authData) {
             Log.i(TAG, "authentication success");
+            mAuthData = authData;
+            Log.i(TAG, "Auth data is : " + mAuthData);
+            Toast.makeText(LoginActivity.this, "I am getting called", Toast.LENGTH_LONG).show();
+            setAuthenticatedUser();
         }
 
         @Override
