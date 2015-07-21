@@ -59,13 +59,13 @@ public class TheftActivity extends Activity {
 
 	/* setup firebase binding to update user data */
 	private void setupFirebaseBindings(final String authUid){
-		mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
+		mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
 		// setup current user binding
-		mFirebaseRef.child("users").child(authUid).addValueEventListener(new ValueEventListener() {
+		mFirebaseRef.child("users").child(authUid).addListenerForSingleValueEvent(new ValueEventListener() {
 			@Override
 			public void onDataChange(DataSnapshot snapshot) {
 				Log.i(TAG, "users changed in Firebase");
-				currentUser = mapper.convertValue(snapshot.getValue(), User.class);
+				currentUser = snapshot.getValue(User.class);
 				populateUserView();
 			}
 

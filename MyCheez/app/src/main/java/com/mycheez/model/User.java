@@ -3,6 +3,7 @@ package com.mycheez.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.firebase.client.ServerValue;
+import com.mycheez.application.MyCheezApplication;
 
 import java.util.Date;
 import java.util.List;
@@ -39,6 +40,10 @@ public class User {
 
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getProfilePicUrl(){
+        return String.format(MyCheezApplication.PROFILE_PIC_URL, this.facebookId);
     }
 
 }
