@@ -1,0 +1,53 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto"
+   android:layout_width="fill_parent"
+   android:layout_height="fill_parent"
+   android:paddingTop="25dp"
+   android:clipChildren="false"
+   android:clipToPadding="false">
+   
+     <ImageView
+	      android:id="@+id/cheeseAnimationImageView"
+	      android:layout_width="wrap_content"
+	      android:layout_height="wrap_content"
+	      android:visibility="gone"
+	      android:src="@drawable/cheese_stealing_4"/>
+     
+		<!--<com.stealthecheese.util.CircularImageView
+			    android:id="@+id/friendImageView"
+			    android:layout_gravity="center"
+			    android:layout_width="65dp"
+			    android:layout_height="65dp"
+			    app:border="true"
+			    app:border_width="2dp"
+			    app:border_color="@color/white"
+			    android:background="@drawable/profile_contacts_4"/>-->
+		<com.mycheez.util.CircularImageView
+			    android:id="@+id/playerImageView"
+			    android:layout_centerHorizontal="true"
+			    android:layout_width="65dp"
+			    android:layout_height="65dp"
+			    app:border="true"
+			    app:border_width="2dp"
+			    app:border_color="@color/white"/>
+
+		
+		
+         <TextView
+        android:id="@+id/counterTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+       android:layout_marginLeft="-15dp"
+        android:layout_toRightOf="@+id/playerImageView"
+        android:background="@drawable/counter_contacts_4"
+       android:ellipsize="end"
+        android:gravity="center"
+        android:textColor="#fff"
+       
+        android:textSize="13dp" />
+
+   
+   
+
+</RelativeLayout>

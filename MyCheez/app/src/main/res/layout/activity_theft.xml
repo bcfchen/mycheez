@@ -172,14 +172,13 @@
                     android:textColor="#00C7D8"/>
             </LinearLayout>
         </LinearLayout>
-        <ListView
-            android:id="@+id/friendsListView"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/playersList"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:divider="@android:color/transparent"
             android:scrollbars="none"
             android:clipChildren="false"
-            android:clipToPadding="false">
-        </ListView>
+            android:clipToPadding="false"/>
     </RelativeLayout>
 </LinearLayout>

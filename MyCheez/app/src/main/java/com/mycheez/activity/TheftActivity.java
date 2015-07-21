@@ -2,17 +2,20 @@ package com.mycheez.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.mycheez.R;
+import com.mycheez.adapter.PlayersListAdapter;
 import com.mycheez.adapter.UserViewAdapter;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.enums.UpdateType;
@@ -25,13 +28,14 @@ public class TheftActivity extends Activity {
 	TextView userCheeseTextView;
 	ImageView refreshImageView;
 	ImageView rankingsImageView;
+    private RecyclerView playersList;
+    private PlayersListAdapter playersListAdapter;
 	private AnimationHandler animationHandler;
 	private UpdateType updateType;
 	private Firebase mFirebaseRef;
 	private User currentUser;
 	private String TAG = "theftActivity";
     private UserViewAdapter userViewAdapter;
-    private ObjectMapper mapper;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,37 +46,37 @@ public class TheftActivity extends Activity {
 		String facebookId = extras.getString("facebookId");
 		initializeUtilities();
 		initializeUIControls();
-		setupFirebaseBindings(facebookId);
+        setupFirebaseBindings(facebookId);
+        initializePlayersList();
 		updateType = UpdateType.LOGIN;
 	}
 
 	private void initializeUtilities() {
-        mapper = new ObjectMapper();
 		this.animationHandler = new AnimationHandler(this);
 	}
 
 	@Override
 	public void onBackPressed() {
-		    finish();
-            super.onBackPressed();
+		finish();
+		super.onBackPressed();
     }
 
 	/* setup firebase binding to update user data */
 	private void setupFirebaseBindings(final String authUid){
 		mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
 		// setup current user binding
-		mFirebaseRef.child("users").child(authUid).addListenerForSingleValueEvent(new ValueEventListener() {
-			@Override
-			public void onDataChange(DataSnapshot snapshot) {
-				Log.i(TAG, "users changed in Firebase");
-				currentUser = snapshot.getValue(User.class);
-				populateUserView();
-			}
+		mFirebaseRef.child("users").child(authUid).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.i(TAG, "users changed in Firebase");
+                currentUser = snapshot.getValue(User.class);
+                populateUserView();
+            }
 
-			@Override
-			public void onCancelled(FirebaseError error) {
-			}
-		});
+            @Override
+            public void onCancelled(FirebaseError error) {
+            }
+        });
 	}
 
 	/* set display properties for user */
@@ -107,25 +111,41 @@ public class TheftActivity extends Activity {
 
 		/* hook up rankings button to fetch ranking info from Parse and populate views */
 		rankingsImageView = (ImageView)findViewById(R.id.rankingImageView);
-		rankingsImageView.setOnClickListener(new View.OnClickListener(){
-			@Override
-			public void onClick(View v) {
+		rankingsImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 //				Intent intent = new Intent(TheftActivity.this, RankingsActivity.class);
 //				updateType = UpdateType.NOUPDATE;
 //				startActivity(intent);
-				}
+            }
 
-		});
+        });
 	}
 
-
+    private void initializePlayersList(){
+        playersList= ( RecyclerView )findViewById( R.id.playersList );
+        Query playersQuery = mFirebaseRef.child("users");
+        try {
+            LinearLayoutManager llm = new LinearLayoutManager(this);
+            playersList.setLayoutManager(llm);
+            playersListAdapter = new PlayersListAdapter(this, playersQuery);
+            playersList.setAdapter( playersListAdapter );
+        } catch (Exception ex){
+            String asdf = ex.toString();
+        }
+    }
 
 	@Override
 	public void onDestroy() {
 		System.out.println("Called destory...");
 		MyCheezApplication.setActivityisStopping();
 		super.onDestroy();
-
 	}
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        playersListAdapter.cleanup();
+    }
 
 }
