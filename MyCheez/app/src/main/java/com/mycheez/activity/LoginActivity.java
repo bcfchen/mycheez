@@ -89,21 +89,6 @@ public class LoginActivity extends Activity {
         titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
     }
 
-//    private void initializeFirebaseAuth(){
-//        mAuthStateListener = new Firebase.AuthStateListener() {
-//            @Override
-//            public void onAuthStateChanged(AuthData authData) {
-//                mAuthData = authData;
-//                Log.i(TAG, "Auth data is : " + mAuthData);
-//                Toast.makeText(LoginActivity.this, "I am getting called", Toast.LENGTH_LONG).show();
-//                doLoginAnimation();
-//             }
-//        };
-//        /* Check if the user is authenticated with Firebase already. If this is the case we can set the authenticated
-//         * user and hide hide any login buttons */
-//        mFirebaseRef.addAuthStateListener(mAuthStateListener);
-//    }
-
     private void initializeFacebookLogin(){
         mFacebookCallbackManager = CallbackManager.Factory.create();
         mFacebookAccessTokenTracker = new AccessTokenTracker() {
@@ -113,7 +98,6 @@ public class LoginActivity extends Activity {
             }
         };
     }
-
 
     private void doLoginAnimation(){
         Animation animTranslate  = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.translate);
@@ -165,6 +149,7 @@ public class LoginActivity extends Activity {
      */
     private void setAuthenticatedUser() {
         if(mAuthData !=null) {
+            showLoadingMsgSection(getString(R.string.prep_steal_zone_message));
             populateProfileInfoForUser();
             GraphRequest meFriendsListRequest = generateFriendListRequest();
             GraphRequestBatch batch = new GraphRequestBatch(meFriendsListRequest);
@@ -180,6 +165,7 @@ public class LoginActivity extends Activity {
                             Log.i(TAG, "Completed");
                             // Based on Success flag
                             if (isSuccess){
+                                hideLoadingMsgSection();
                                 startTheftActivity();
                             }
 

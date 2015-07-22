@@ -32,6 +32,8 @@
     <string name="cheese_theft_message">stole your cheese</string>
     <string name="cheese_theft_failed_message">Oh oh! Someone else got the last cheese!</string>
     <string name="refresh_finished_message">Finished Updating!</string>
+    <string name="get_user_failed_message">Failed to retrieve user. Please restart your app :(</string>
+    <string name="get_user_cheese_failed_message">Failed to retrieve your cheese. Please restart your app :(</string>
 
     <!-- FlyingCheeseActivity -->
     <string name="thief_facebookId">thiefFacebookId</string>

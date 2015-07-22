@@ -46,6 +46,39 @@ public class FirebaseProxy  {
         });
     }
 
+    public static void getUserData(String facebookId, final GetUserDataCallback callback){
+        myCheezRef.child("users").child(facebookId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.i(TAG, "user loaded from Firebase");
+                User currentUser = snapshot.getValue(User.class);
+                callback.userDataRetrieved(currentUser);
+            }
+
+            @Override
+            public void onCancelled(FirebaseError error) {
+                Log.i(TAG, "loading user from Firebase failed: " + error.toString());
+                callback.userDataRetrieved(null);
+            }
+        });
+    }
+
+    public static void getUserCheeseCount(String facebookId, final GetUserCheeseCountCallback callback){
+        myCheezRef.child("users").child(facebookId).child("cheeseCount").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.i(TAG, "cheese count changed in Firebase");
+                Integer updatedCheeseCount = snapshot.getValue(Integer.class);
+                callback.userCheeseCountRetrieved(updatedCheeseCount);
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.i(TAG, "failed to get user cheesecount from Firebase");
+                callback.userCheeseCountRetrieved(null);
+            }
+        });
+    }
 
     public static void insertNewUser(User currentuser, final UpsertUserCallBack callBack){
         Firebase currentUserRef = myCheezRef.child("users").child(currentuser.getFacebookId());
@@ -79,8 +112,13 @@ public class FirebaseProxy  {
 
     }
 
+    public interface GetUserCheeseCountCallback{
+        void userCheeseCountRetrieved(Integer cheeseCount);
+    }
 
-
+    public interface GetUserDataCallback{
+        void userDataRetrieved(User user);
+    }
 
     public interface UpsertUserCallBack {
         void isUpsertSuccess(boolean result);

@@ -4,21 +4,19 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
 import com.firebase.client.Query;
-import com.firebase.client.ValueEventListener;
 import com.mycheez.R;
 import com.mycheez.adapter.PlayersListAdapter;
 import com.mycheez.adapter.UserViewAdapter;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.enums.UpdateType;
+import com.mycheez.firebase.FirebaseProxy;
 import com.mycheez.model.User;
 import com.mycheez.util.AnimationHandler;
 import com.mycheez.util.CircularImageView;
@@ -33,7 +31,6 @@ public class TheftActivity extends Activity {
 	private AnimationHandler animationHandler;
 	private UpdateType updateType;
 	private Firebase mFirebaseRef;
-	private User currentUser;
 	private String TAG = "theftActivity";
     private UserViewAdapter userViewAdapter;
 
@@ -65,31 +62,26 @@ public class TheftActivity extends Activity {
 	private void setupUserFirebaseBindings(final String authUid){
 		mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
 		// make single call to retrieve info for current user once
-		mFirebaseRef.child("users").child(authUid).addListenerForSingleValueEvent(new ValueEventListener() {
-			@Override
-			public void onDataChange(DataSnapshot snapshot) {
-				Log.i(TAG, "user loaded from Firebase");
-				currentUser = snapshot.getValue(User.class);
-				userViewAdapter.setUser(currentUser);
-			}
-
-			@Override
-			public void onCancelled(FirebaseError error) {
-			}
-		});
+		FirebaseProxy.getUserData(authUid, new FirebaseProxy.GetUserDataCallback() {
+            @Override
+            public void userDataRetrieved(User user) {
+                if (user == null) {
+                    Toast.makeText(TheftActivity.this, getString(R.string.get_user_failed_message), Toast.LENGTH_LONG).show();
+                } else {
+                    userViewAdapter.setUser(user);
+                }
+            }
+        });
 
 		// bind cheese count
-		mFirebaseRef.child("users").child(authUid).child("cheeseCount").addValueEventListener(new ValueEventListener() {
-			@Override
-			public void onDataChange(DataSnapshot snapshot) {
-				Log.i(TAG, "cheese count changed in Firebase");
-				int updatedCheeseCount = snapshot.getValue(int.class);
-				userViewAdapter.setCheeseCount(updatedCheeseCount);
-			}
-
-			@Override
-			public void onCancelled(FirebaseError firebaseError) {
-
+		FirebaseProxy.getUserCheeseCount(authUid, new FirebaseProxy.GetUserCheeseCountCallback() {
+            @Override
+            public void userCheeseCountRetrieved(Integer cheeseCount) {
+                if (cheeseCount == null) {
+                    Toast.makeText(TheftActivity.this, getString(R.string.get_user_cheese_failed_message), Toast.LENGTH_LONG).show();
+                } else {
+                    userViewAdapter.setCheeseCount(cheeseCount);
+				}
 			}
 		});
 	}
@@ -136,14 +128,10 @@ public class TheftActivity extends Activity {
     private void initializePlayersList(){
         playersList= ( RecyclerView )findViewById( R.id.playersList );
         Query playersQuery = mFirebaseRef.child("users");
-        try {
-            LinearLayoutManager llm = new LinearLayoutManager(this);
-            playersList.setLayoutManager(llm);
-            playersListAdapter = new PlayersListAdapter(this, playersQuery);
-            playersList.setAdapter( playersListAdapter );
-        } catch (Exception ex){
-            String asdf = ex.toString();
-        }
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        playersList.setLayoutManager(llm);
+        playersListAdapter = new PlayersListAdapter(this, playersQuery);
+        playersList.setAdapter( playersListAdapter );
     }
 
 	@Override
