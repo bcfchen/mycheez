@@ -175,7 +175,6 @@ public class TheftActivity extends Activity {
     @Override
     public void onStop() {
         super.onStop();
-        playersListAdapter.cleanup();
     }
 
 }
