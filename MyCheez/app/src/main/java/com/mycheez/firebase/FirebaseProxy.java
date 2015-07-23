@@ -5,21 +5,32 @@ import android.util.Log;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.ServerValue;
 import com.firebase.client.ValueEventListener;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.model.History;
 import com.mycheez.model.User;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by ahetawal on 7/19/15.
  */
 public class FirebaseProxy  {
-
     private static final String TAG = "firebaseproxy";
     private static Firebase myCheezRef = MyCheezApplication.getMyCheezFirebaseRef();
 
+    /**
+     * Firebase operation to update or insert a user.
+     * This operation is performed when the new user opens the app for the very first time
+     * OR
+     * When an existing user opens the app
+     * We try to update Firebase with the latest info for that user at that point in time.
+     * @param currentUser
+     * @param callback
+     */
     public static void upsertCurrentUser(final User currentUser, final UpsertUserCallBack callback){
 
         myCheezRef.child("users").child(currentUser.getFacebookId()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -43,40 +54,6 @@ public class FirebaseProxy  {
             @Override
             public void onCancelled(FirebaseError error) {
                 Log.e(TAG, "Error upserting: " + error);
-            }
-        });
-    }
-
-    public static void getUserData(String facebookId, final UserDataCallback callback){
-        myCheezRef.child("users").child(facebookId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Log.i(TAG, "user loaded from Firebase");
-                User currentUser = snapshot.getValue(User.class);
-                callback.userDataRetrieved(currentUser);
-            }
-
-            @Override
-            public void onCancelled(FirebaseError error) {
-                Log.i(TAG, "loading user from Firebase failed: " + error.toString());
-                callback.userDataRetrieved(null);
-            }
-        });
-    }
-
-    public static void getUserCheeseCount(String facebookId, final UserCheeseCountCallback callback){
-        myCheezRef.child("users").child(facebookId).child("cheeseCount").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Log.i(TAG, "cheese count changed in Firebase");
-                Integer updatedCheeseCount = snapshot.getValue(Integer.class);
-                callback.userCheeseCountRetrieved(updatedCheeseCount);
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                Log.i(TAG, "failed to get user cheesecount from Firebase");
-                callback.userCheeseCountRetrieved(null);
             }
         });
     }
@@ -113,7 +90,64 @@ public class FirebaseProxy  {
 
     }
 
-    public static void insertTheftHistory(String victimId, String currentUserName){
+    /**
+     * SingleValueEvent triggered when we land on to Theftactivity,
+     * We use it for getting the latest cheese count and other stuff for the user
+     *
+     * NOTE: This forms the basis of the static user object which all functions read from.
+     *
+     * @param facebookId
+     * @param callback
+     */
+    public static void getUserData(String facebookId, final UserDataCallback callback){
+        myCheezRef.child("users").child(facebookId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.i(TAG, "user loaded from Firebase");
+                User currentUser = snapshot.getValue(User.class);
+                callback.userDataRetrieved(currentUser);
+            }
+
+            @Override
+            public void onCancelled(FirebaseError error) {
+                Log.i(TAG, "loading user from Firebase failed: " + error.toString());
+                callback.userDataRetrieved(null);
+            }
+        });
+    }
+
+
+    /**
+     * ValueListener on cheeseCount property of current User.
+     * Used for updating the cheese Counter for current user, if others are stealing from it.
+     * Or the user itself is performing a steal
+     * @param facebookId
+     * @param callback
+     */
+    public static void getUserCheeseCount(String facebookId, final UserCheeseCountCallback callback){
+        myCheezRef.child("users").child(facebookId).child("cheeseCount").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.i(TAG, "cheese count changed in Firebase");
+                Integer updatedCheeseCount = snapshot.getValue(Integer.class);
+                callback.userCheeseCountRetrieved(updatedCheeseCount);
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.i(TAG, "failed to get user cheesecount from Firebase");
+                callback.userCheeseCountRetrieved(null);
+            }
+        });
+    }
+
+
+    /**
+     * Firebase operation to insert the audit log of the theft history from the current user
+     * @param victimId
+     */
+    public static void insertTheftHistory(String victimId){
+        String currentUserName = MyCheezApplication.getCurrentUser().getFirstName();
         Firebase currentUserRef = myCheezRef.child("history").child(victimId);
         History hist = new History();
         hist.setThiefName(currentUserName);
@@ -121,6 +155,42 @@ public class FirebaseProxy  {
 
     }
 
+    /**
+     * <b>MAIN: </b>Firebase operatin to perform cheese theft update and calculations
+     * Sequence:
+     * 1. First reduce cheese for victim if that is success,
+     * 2. Give the new cheese to the thief
+     * 3. Also look at the validation rules on Firebase for negative cheeseCounts.
+     *
+     * @param victim
+     */
+    public static void doCheeseTheft(final User victim, final CheeseTheftActionCallback theftCallback){
+
+        final User thief = MyCheezApplication.getCurrentUser();
+        Firebase victimRef = myCheezRef.child("users").child(victim.getFacebookId());
+        Map<String, Object> victimCheeseCountMap = new HashMap<String, Object>();
+        victimCheeseCountMap.put("cheeseCount", victim.getCheeseCount()-1);
+        victimCheeseCountMap.put("updatedAt", ServerValue.TIMESTAMP);
+        victimRef.updateChildren(victimCheeseCountMap, new Firebase.CompletionListener(){
+            @Override
+            public void onComplete(FirebaseError firebaseError, Firebase firebase) {
+                if(firebaseError == null){
+                    Firebase currentUserRef = myCheezRef.child("users").child(thief.getFacebookId());
+                    Map<String, Object> thiefCheeseCountMap = new HashMap<String, Object>();
+                    thiefCheeseCountMap.put("cheeseCount", (thief.getCheeseCount() + 1));
+                    thiefCheeseCountMap.put("updatedAt", ServerValue.TIMESTAMP);
+                    currentUserRef.updateChildren(thiefCheeseCountMap);
+                    theftCallback.cheeseTheftPerformed(true);
+                } else {
+                    Log.e(TAG, "Error performing theft: " + firebaseError.getMessage());
+                    theftCallback.cheeseTheftPerformed(false);
+                }
+            }
+        });
+    }
+
+
+    /* All callback interfaces for signalling completion of the firebase operatios */
 
     public interface UserCheeseCountCallback{
         void userCheeseCountRetrieved(Integer cheeseCount);
@@ -132,5 +202,9 @@ public class FirebaseProxy  {
 
     public interface UpsertUserCallBack {
         void isUpsertSuccess(boolean result);
+    }
+
+    public interface CheeseTheftActionCallback {
+        void cheeseTheftPerformed(boolean isSuccess);
     }
 }

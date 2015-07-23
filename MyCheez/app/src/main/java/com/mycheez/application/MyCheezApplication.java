@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.facebook.FacebookSdk;
 import com.firebase.client.Firebase;
+import com.mycheez.model.User;
 
 /**
  * Created by ahetawal on 7/4/15.
@@ -18,6 +19,8 @@ public class MyCheezApplication extends Application {
     private static boolean activityPaused;
     private static Firebase rootFirebaseRef;
     private static Firebase myCheezFirebaseRef;
+    private static User currentUser;
+
 
     @Override
     public void onCreate() {
@@ -43,6 +46,14 @@ public class MyCheezApplication extends Application {
 
     public static boolean isActivityRunning() {
         return activityRunning;
+    }
+
+    public static User getCurrentUser() {
+        return currentUser;
+    }
+
+    public static void setCurrentUser(User currentUser) {
+        MyCheezApplication.currentUser = currentUser;
     }
 
 

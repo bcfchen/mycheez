@@ -39,11 +39,6 @@ public class TheftActivity extends Activity {
     private UserViewAdapter userViewAdapter;
     private String currentUserFacebookId;
 
-    /**
-     * NOTE: CAREFUL THIS CAN BE NULL in an Aync way.
-     * Use with caution
-     */
-    private User currentUser;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +76,7 @@ public class TheftActivity extends Activity {
                 if (user == null) {
                     Toast.makeText(TheftActivity.this, getString(R.string.get_user_failed_message), Toast.LENGTH_LONG).show();
                 } else {
-                    currentUser = user;
+                    MyCheezApplication.setCurrentUser(user);
                     userViewAdapter.setUser(user);
                 }
             }
@@ -94,6 +89,7 @@ public class TheftActivity extends Activity {
                 if (cheeseCount == null) {
                     Toast.makeText(TheftActivity.this, getString(R.string.get_user_cheese_failed_message), Toast.LENGTH_LONG).show();
                 } else {
+                    MyCheezApplication.getCurrentUser().setCheeseCount(cheeseCount);
                     userViewAdapter.setCheeseCount(cheeseCount);
                 }
             }
@@ -156,13 +152,22 @@ public class TheftActivity extends Activity {
 	}
 
 
-	public void onCheeseTheft(View friendImageClicked, User victim, ImageView movedCheeseImg){
+	public void onCheeseTheft(View friendImageClicked, final User victim, ImageView movedCheeseImg){
     	/* display animation and start cheese theft async process */
 		animationHandler.animateCheeseTheft(friendImageClicked, movedCheeseImg, userProfileImageView);
 
-        // Updating theft history...
-        // Current user will always be present at this point...
-        FirebaseProxy.insertTheftHistory(victim.getFacebookId(), currentUser.getFirstName() );
+        // Performing actual steal...
+        FirebaseProxy.doCheeseTheft(victim, new FirebaseProxy.CheeseTheftActionCallback() {
+            @Override
+            public void cheeseTheftPerformed(boolean isSuccess) {
+                if (isSuccess) {
+                    //Only update theft history, IF theft success...
+                    FirebaseProxy.insertTheftHistory(victim.getFacebookId());
+                }
+            }
+        });
+
+
 	}
 
 	@Override

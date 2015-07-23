@@ -164,8 +164,9 @@ public class LoginActivity extends Activity {
                         public void isUpsertSuccess(boolean isSuccess) {
                             Log.i(TAG, "Completed");
                             hideLoadingMsgSection();
-
                             if (isSuccess){
+                                // Set the user object in Appplication scope
+                                MyCheezApplication.setCurrentUser(currentUser);
                                 startTheftActivity();
                             } else {
                                 Log.e(TAG, "Error upserting user data");

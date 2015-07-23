@@ -54,12 +54,13 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
 
                 playerMap.put(dataSnapshot.getKey(), model);
                 // Insert into the correct location, based on previousChildName
+                int nextIndex = 0;
                 if (previousChildName == null) {
-                    players.add(0, model);
+                    players.add(nextIndex, model);
                 } else {
                     User previousModel = playerMap.get(previousChildName);
                     int previousIndex = players.indexOf(previousModel);
-                    int nextIndex = previousIndex + 1;
+                    nextIndex = previousIndex + 1;
                     if (nextIndex == players.size()) {
                         players.add(model);
                     } else {
@@ -67,13 +68,19 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                     }
                 }
 
-                notifyDataSetChanged();
+                notifyItemInserted(nextIndex);
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 // One of the mModels changed. Replace it in our list and name mapping
                 String modelName = dataSnapshot.getKey();
+                //User model = dataSnapshot.getValue(User.class);
+                // Dont add the current user to the players list
+                if(currentUserFacebookId.equals(modelName)){
+                    return;
+                }
+
                 User oldModel = playerMap.get(modelName);
                 User newModel = dataSnapshot.getValue(User.class);
                 int index = players.indexOf(oldModel);
@@ -81,7 +88,8 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                 players.set(index, newModel);
                 playerMap.put(modelName, newModel);
 
-                notifyDataSetChanged();
+               // notifyDataSetChanged();
+                notifyItemChanged(index);
             }
 
             @Override
