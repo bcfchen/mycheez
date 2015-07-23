@@ -35,7 +35,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
     private Activity theftActivity;
     private String TAG = "PlayersList";
 
-    public PlayersListAdapter(Activity activity, Query query) {
+    public PlayersListAdapter(Activity activity, Query query, final String currentUserFacebookId) {
         this.theftActivity = activity;
         players = new ArrayList<>();
         playerMap =  new HashMap<>();
@@ -46,8 +46,13 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 User model = dataSnapshot.getValue(User.class);
-                playerMap.put(dataSnapshot.getKey(), model);
 
+                // Dont add the current user to the players list
+                if(currentUserFacebookId.equals(model.getFacebookId())){
+                    return;
+                }
+
+                playerMap.put(dataSnapshot.getKey(), model);
                 // Insert into the correct location, based on previousChildName
                 if (previousChildName == null) {
                     players.add(0, model);

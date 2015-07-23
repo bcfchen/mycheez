@@ -33,6 +33,7 @@ public class TheftActivity extends Activity {
 	private Firebase mFirebaseRef;
 	private String TAG = "theftActivity";
     private UserViewAdapter userViewAdapter;
+    private String currentUserFacebookId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +42,12 @@ public class TheftActivity extends Activity {
 		setContentView(R.layout.activity_theft);
 		Bundle extras = getIntent().getExtras();
 		String facebookId = extras.getString("facebookId");
+        currentUserFacebookId = facebookId;
 		initializeUtilities();
 		initializeUIControls();
-		setupUserFirebaseBindings(facebookId);
+		setupUserFirebaseBindings();
         initializePlayersList();
-		updateType = UpdateType.LOGIN;
+        updateType = UpdateType.LOGIN;
 	}
 
 	private void initializeUtilities() {
@@ -59,10 +61,10 @@ public class TheftActivity extends Activity {
     }
 
 	/* setup firebase binding to update user data */
-	private void setupUserFirebaseBindings(final String authUid){
+	private void setupUserFirebaseBindings(){
 		mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
 		// make single call to retrieve info for current user once
-		FirebaseProxy.getUserData(authUid, new FirebaseProxy.UserDataCallback() {
+		FirebaseProxy.getUserData(currentUserFacebookId, new FirebaseProxy.UserDataCallback() {
             @Override
             public void userDataRetrieved(User user) {
                 if (user == null) {
@@ -74,16 +76,16 @@ public class TheftActivity extends Activity {
         });
 
 		// bind cheese count
-		FirebaseProxy.getUserCheeseCount(authUid, new FirebaseProxy.UserCheeseCountCallback() {
+		FirebaseProxy.getUserCheeseCount(currentUserFacebookId, new FirebaseProxy.UserCheeseCountCallback() {
             @Override
             public void userCheeseCountRetrieved(Integer cheeseCount) {
                 if (cheeseCount == null) {
                     Toast.makeText(TheftActivity.this, getString(R.string.get_user_cheese_failed_message), Toast.LENGTH_LONG).show();
                 } else {
                     userViewAdapter.setCheeseCount(cheeseCount);
-				}
-			}
-		});
+                }
+            }
+        });
 	}
 
     
@@ -130,7 +132,8 @@ public class TheftActivity extends Activity {
         Query playersQuery = mFirebaseRef.child("users");
         LinearLayoutManager llm = new LinearLayoutManager(this);
         playersList.setLayoutManager(llm);
-        playersListAdapter = new PlayersListAdapter(this, playersQuery);
+
+        playersListAdapter = new PlayersListAdapter(this, playersQuery, currentUserFacebookId);
         playersList.setAdapter(playersListAdapter);
     }
 
