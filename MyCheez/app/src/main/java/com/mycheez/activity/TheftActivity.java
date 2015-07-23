@@ -50,7 +50,7 @@ public class TheftActivity extends Activity {
 		initializeUIControls();
 		setupUserFirebaseBindings();
         initializePlayersList();
-		initializeTheftHistoryList(facebookId);
+		initializeTheftHistoryList();
 		updateType = UpdateType.LOGIN;
 	}
 
@@ -76,8 +76,8 @@ public class TheftActivity extends Activity {
                 } else {
                     userViewAdapter.setUser(user);
                 }
-			}
-		});
+            }
+        });
 
 		// bind cheese count
 		FirebaseProxy.getUserCheeseCount(currentUserFacebookId, new FirebaseProxy.UserCheeseCountCallback() {
@@ -93,8 +93,7 @@ public class TheftActivity extends Activity {
 	}
 
     
-	private void initializeUIControls()
-	{
+	private void initializeUIControls() {
 		initializeUserView();
 		initializeImageButtons();
 	}
@@ -107,8 +106,7 @@ public class TheftActivity extends Activity {
 	}
 
 	/* hook up image button clicks */
-	private void initializeImageButtons()
-	{
+	private void initializeImageButtons() {
 		/* hook up refresh button to fetch data from Parse and populate views */
 		refreshImageView = (ImageView)findViewById(R.id.refreshImageView);
 		refreshImageView.setOnClickListener(new View.OnClickListener(){
@@ -141,9 +139,9 @@ public class TheftActivity extends Activity {
         playersList.setAdapter(playersListAdapter);
     }
 
-	private void initializeTheftHistoryList(String facebookId){
+	private void initializeTheftHistoryList(){
 		historyList = ( RecyclerView )findViewById( R.id.historyList);
-		Query historyQuery = mFirebaseRef.child("history").child(facebookId);
+		Query historyQuery = mFirebaseRef.child("history").child(currentUserFacebookId);
 		LinearLayoutManager llm = new LinearLayoutManager(this);
 		historyList.setLayoutManager(llm);
 		historyListAdapter = new HistoryListAdapter(this, historyQuery);
