@@ -141,15 +141,48 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                 .centerCrop()
                 .into(playerViewHolder.playerImageView);
 
-        playerViewHolder.playerImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(TAG, "Victim is : " + position + " : " + player);
-                ((TheftActivity)theftActivity).onCheeseTheft(playerViewHolder.playerImageView, player,
-                        playerViewHolder.cheeseAnimationImageView);
-            }
-        });
+        setOnClickListenerOnPlayers(playerViewHolder, position, player);
     }
+
+    /**
+     * Method used for setting up the image onclick listeners on each player image
+     * based on their current cheese counts. Stealable vs Non-stealable.
+     * @param playerViewHolder
+     * @param position
+     * @param player
+     */
+    private void setOnClickListenerOnPlayers(final PlayerViewHolder playerViewHolder, final int position, final User player) {
+        if(areThereEnoughCheese(player.getCheeseCount())){
+            unlockImageClick(playerViewHolder);
+            playerViewHolder.playerImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i(TAG, "Victim is : " + position + " : " + player);
+                    ((TheftActivity)theftActivity).onCheeseTheft(playerViewHolder.playerImageView, player,
+                            playerViewHolder.cheeseAnimationImageView);
+                }
+            });
+        } else {
+            lockImageClick(playerViewHolder);
+        }
+    }
+
+    private boolean areThereEnoughCheese(int cheeseCount) {
+        return cheeseCount > 0;
+    }
+
+    public void lockImageClick(PlayerViewHolder playerViewHolder) {
+        playerViewHolder.playerImageView.setAlpha(0.2f);
+        playerViewHolder.counterTextView.setAlpha(0.2f);
+        playerViewHolder.playerImageView.setClickable(false);
+    }
+
+    public void unlockImageClick(PlayerViewHolder playerViewHolder) {
+        playerViewHolder.playerImageView.setAlpha(1f);
+        playerViewHolder.counterTextView.setAlpha(1f);
+        playerViewHolder.playerImageView.setClickable(true);
+    }
+
 
     @Override
     public int getItemCount() {
