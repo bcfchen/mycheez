@@ -7,6 +7,7 @@ import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.mycheez.application.MyCheezApplication;
+import com.mycheez.model.History;
 import com.mycheez.model.User;
 
 import java.util.Date;
@@ -111,6 +112,15 @@ public class FirebaseProxy  {
         });
 
     }
+
+    public static void insertTheftHistory(String victimId, String currentUserName){
+        Firebase currentUserRef = myCheezRef.child("history").child(victimId);
+        History hist = new History();
+        hist.setThiefName(currentUserName);
+        currentUserRef.push().setValue(hist);
+
+    }
+
 
     public interface UserCheeseCountCallback{
         void userCheeseCountRetrieved(Integer cheeseCount);

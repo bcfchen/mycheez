@@ -39,6 +39,12 @@ public class TheftActivity extends Activity {
     private UserViewAdapter userViewAdapter;
     private String currentUserFacebookId;
 
+    /**
+     * NOTE: CAREFUL THIS CAN BE NULL in an Aync way.
+     * Use with caution
+     */
+    private User currentUser;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -75,6 +81,7 @@ public class TheftActivity extends Activity {
                 if (user == null) {
                     Toast.makeText(TheftActivity.this, getString(R.string.get_user_failed_message), Toast.LENGTH_LONG).show();
                 } else {
+                    currentUser = user;
                     userViewAdapter.setUser(user);
                 }
             }
@@ -153,6 +160,10 @@ public class TheftActivity extends Activity {
 	public void onCheeseTheft(View friendImageClicked, User victim, ImageView movedCheeseImg){
     	/* display animation and start cheese theft async process */
 		animationHandler.animateCheeseTheft(friendImageClicked, movedCheeseImg, userProfileImageView);
+
+        // Updating theft history...
+        // Current user will always be present at this point...
+        FirebaseProxy.insertTheftHistory(victim.getFacebookId(), currentUser.getFirstName() );
 	}
 
 	@Override
