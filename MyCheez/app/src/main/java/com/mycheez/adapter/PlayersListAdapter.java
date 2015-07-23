@@ -13,6 +13,7 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.Query;
 import com.mycheez.R;
+import com.mycheez.activity.TheftActivity;
 import com.mycheez.model.User;
 import com.mycheez.util.CircularImageView;
 import com.squareup.picasso.Picasso;
@@ -31,10 +32,11 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
     private Map<String, User> playerMap;
     private ChildEventListener mListener;
     private Query mRef;
-    private Activity activity;
+    private Activity theftActivity;
+    private String TAG = "PlayersList";
 
     public PlayersListAdapter(Activity activity, Query query) {
-        this.activity = activity;
+        this.theftActivity = activity;
         players = new ArrayList<>();
         playerMap =  new HashMap<>();
         mRef = query;
@@ -116,15 +118,24 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
     }
 
     @Override
-    public void onBindViewHolder(PlayerViewHolder playerViewHolder, int i) {
-        User player = players.get(i);
+    public void onBindViewHolder(final PlayerViewHolder playerViewHolder, final int position) {
+        final User player = players.get(position);
         playerViewHolder.counterTextView.setText(Integer.toString(player.getCheeseCount()));
         //use Picasso to load image into ImageView
         String imageUrl = player.getProfilePicUrl() + "?type=normal";
-        Picasso.with(activity).load(imageUrl)
+        Picasso.with(theftActivity).load(imageUrl)
                 .fit()
                 .centerCrop()
                 .into(playerViewHolder.playerImageView);
+
+        playerViewHolder.playerImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "Victim is : " + position + " : " + player);
+                ((TheftActivity)theftActivity).onCheeseTheft(playerViewHolder.playerImageView, player,
+                        playerViewHolder.cheeseAnimationImageView);
+            }
+        });
     }
 
     @Override

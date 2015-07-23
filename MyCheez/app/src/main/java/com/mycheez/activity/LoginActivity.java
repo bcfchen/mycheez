@@ -74,7 +74,6 @@ public class LoginActivity extends Activity {
         initializeUIComponents();
         // initialize Firebase reference
         mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
-//        initializeFirebaseAuth();
         doLoginAnimation();
         initializeFacebookLogin();
     }
@@ -132,6 +131,7 @@ public class LoginActivity extends Activity {
     private void onFacebookAccessTokenChange(AccessToken token) {
         if (token != null) {
             System.out.println("About to call : " + new Date());
+            loginFBButton.setVisibility(View.GONE);
             mFirebaseRef.authWithOAuthToken("facebook", token.getToken(), new AuthResultHandler("facebook"));
         } else {
             // Logged out of Facebook and currently authenticated with Firebase using Facebook, so do a logout
@@ -231,7 +231,7 @@ public class LoginActivity extends Activity {
             Log.i(TAG, "authentication success");
             mAuthData = authData;
             Log.i(TAG, "Auth data is : " + mAuthData);
-            Toast.makeText(LoginActivity.this, "I am getting called", Toast.LENGTH_LONG).show();
+            //Toast.makeText(LoginActivity.this, "I am getting called", Toast.LENGTH_LONG).show();
             setAuthenticatedUser();
         }
 

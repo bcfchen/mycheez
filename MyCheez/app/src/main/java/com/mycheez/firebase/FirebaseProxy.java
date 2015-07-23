@@ -46,7 +46,7 @@ public class FirebaseProxy  {
         });
     }
 
-    public static void getUserData(String facebookId, final GetUserDataCallback callback){
+    public static void getUserData(String facebookId, final UserDataCallback callback){
         myCheezRef.child("users").child(facebookId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -63,7 +63,7 @@ public class FirebaseProxy  {
         });
     }
 
-    public static void getUserCheeseCount(String facebookId, final GetUserCheeseCountCallback callback){
+    public static void getUserCheeseCount(String facebookId, final UserCheeseCountCallback callback){
         myCheezRef.child("users").child(facebookId).child("cheeseCount").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -112,11 +112,11 @@ public class FirebaseProxy  {
 
     }
 
-    public interface GetUserCheeseCountCallback{
+    public interface UserCheeseCountCallback{
         void userCheeseCountRetrieved(Integer cheeseCount);
     }
 
-    public interface GetUserDataCallback{
+    public interface UserDataCallback{
         void userDataRetrieved(User user);
     }
 

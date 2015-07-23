@@ -7,7 +7,6 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
@@ -21,8 +20,7 @@ public class AnimationHandler {
 		this.activityContext = activityContext;
 	}
 	
-	public void startAnimateRefresh(View view)
-	{
+	public void startAnimateRefresh(View view) {
 		Animation rotation = AnimationUtils.loadAnimation(activityContext, R.anim.rotate);
 		view.startAnimation(rotation);
 	}
@@ -32,18 +30,15 @@ public class AnimationHandler {
 		view.clearAnimation();
 	}
 	
-	public void fadeInOutView(View view, AnimationListener listener)
-	{
+	public void fadeInOutView(View view, AnimationListener listener) {
 		view.setVisibility(View.VISIBLE);
         Animation animFade  = AnimationUtils.loadAnimation(activityContext, R.anim.fadeinout);
         animFade.setAnimationListener(listener);
         view.startAnimation(animFade);
 	}
 	
-	public void animateCheeseTheft(View viewItemClicked, final ImageView movedCheeseImg, final TextView cheeseCounter, 	final ImageView userProfileImageView,
-									final int updatedCurrentCount, 
-									final int updateFriendCheeseCount) 
-	{
+	public void animateCheeseTheft(View viewItemClicked, final ImageView movedCheeseImg,
+								   final ImageView userProfileImageView) {
 		AnimationListener animL = new AnimationListener() {
 			@Override
 			public void onAnimationStart(Animation animation) {}
@@ -75,8 +70,7 @@ public class AnimationHandler {
 		movedCheeseImg.startAnimation(a);
 	}
 	
-    private void wobbleImageView(View imageView)
-    {
+    private void wobbleImageView(View imageView) {
         Animation animationWobble  = AnimationUtils.loadAnimation(activityContext, R.anim.wobble);
         imageView.startAnimation(animationWobble);
         Vibrator v = (Vibrator) activityContext.getSystemService(Context.VIBRATOR_SERVICE);

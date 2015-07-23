@@ -62,7 +62,7 @@ public class TheftActivity extends Activity {
 	private void setupUserFirebaseBindings(final String authUid){
 		mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
 		// make single call to retrieve info for current user once
-		FirebaseProxy.getUserData(authUid, new FirebaseProxy.GetUserDataCallback() {
+		FirebaseProxy.getUserData(authUid, new FirebaseProxy.UserDataCallback() {
             @Override
             public void userDataRetrieved(User user) {
                 if (user == null) {
@@ -74,7 +74,7 @@ public class TheftActivity extends Activity {
         });
 
 		// bind cheese count
-		FirebaseProxy.getUserCheeseCount(authUid, new FirebaseProxy.GetUserCheeseCountCallback() {
+		FirebaseProxy.getUserCheeseCount(authUid, new FirebaseProxy.UserCheeseCountCallback() {
             @Override
             public void userCheeseCountRetrieved(Integer cheeseCount) {
                 if (cheeseCount == null) {
@@ -131,8 +131,14 @@ public class TheftActivity extends Activity {
         LinearLayoutManager llm = new LinearLayoutManager(this);
         playersList.setLayoutManager(llm);
         playersListAdapter = new PlayersListAdapter(this, playersQuery);
-        playersList.setAdapter( playersListAdapter );
+        playersList.setAdapter(playersListAdapter);
     }
+
+
+	public void onCheeseTheft(View friendImageClicked, User victim, ImageView movedCheeseImg){
+    	/* display animation and start cheese theft async process */
+		animationHandler.animateCheeseTheft(friendImageClicked, movedCheeseImg, userProfileImageView);
+	}
 
 	@Override
 	public void onDestroy() {
