@@ -142,14 +142,13 @@ public class TheftActivity extends Activity {
         Query playersQuery = mFirebaseRef.child("users");
         LinearLayoutManager llm = new LinearLayoutManager(this);
         playersList.setLayoutManager(llm);
-
         playersListAdapter = new PlayersListAdapter(this, playersQuery, currentUserFacebookId);
         playersList.setAdapter(playersListAdapter);
     }
 
 	private void initializeTheftHistoryList(){
 		historyList = ( RecyclerView )findViewById( R.id.historyList);
-        Query historyQuery = mFirebaseRef.child("history").child(currentUserFacebookId);
+        Query historyQuery = mFirebaseRef.child("history").child(currentUserFacebookId).orderByKey().limitToLast(5);
         RecyclerViewLinearLayoutManager llm = new RecyclerViewLinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 		historyList.setLayoutManager(llm);
 		historyListAdapter = new HistoryListAdapter(this, historyQuery);
