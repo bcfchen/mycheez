@@ -13,6 +13,7 @@ import com.firebase.client.Firebase;
 import com.firebase.client.Query;
 import com.mycheez.R;
 import com.mycheez.adapter.PlayersListAdapter;
+import com.mycheez.adapter.HistoryListAdapter;
 import com.mycheez.adapter.UserViewAdapter;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.enums.UpdateType;
@@ -27,7 +28,9 @@ public class TheftActivity extends Activity {
 	ImageView refreshImageView;
 	ImageView rankingsImageView;
     private RecyclerView playersList;
+	private RecyclerView historyList;
     private PlayersListAdapter playersListAdapter;
+	private HistoryListAdapter historyListAdapter;
 	private AnimationHandler animationHandler;
 	private UpdateType updateType;
 	private Firebase mFirebaseRef;
@@ -47,7 +50,8 @@ public class TheftActivity extends Activity {
 		initializeUIControls();
 		setupUserFirebaseBindings();
         initializePlayersList();
-        updateType = UpdateType.LOGIN;
+		initializeTheftHistoryList(facebookId);
+		updateType = UpdateType.LOGIN;
 	}
 
 	private void initializeUtilities() {
@@ -72,8 +76,8 @@ public class TheftActivity extends Activity {
                 } else {
                     userViewAdapter.setUser(user);
                 }
-            }
-        });
+			}
+		});
 
 		// bind cheese count
 		FirebaseProxy.getUserCheeseCount(currentUserFacebookId, new FirebaseProxy.UserCheeseCountCallback() {
@@ -136,6 +140,15 @@ public class TheftActivity extends Activity {
         playersListAdapter = new PlayersListAdapter(this, playersQuery, currentUserFacebookId);
         playersList.setAdapter(playersListAdapter);
     }
+
+	private void initializeTheftHistoryList(String facebookId){
+		historyList = ( RecyclerView )findViewById( R.id.historyList);
+		Query historyQuery = mFirebaseRef.child("history").child(facebookId);
+		LinearLayoutManager llm = new LinearLayoutManager(this);
+		historyList.setLayoutManager(llm);
+		historyListAdapter = new HistoryListAdapter(this, historyQuery);
+		historyList.setAdapter(historyListAdapter);
+	}
 
 
 	public void onCheeseTheft(View friendImageClicked, User victim, ImageView movedCheeseImg){

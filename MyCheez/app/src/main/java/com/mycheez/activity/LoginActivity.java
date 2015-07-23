@@ -163,10 +163,13 @@ public class LoginActivity extends Activity {
                         @Override
                         public void isUpsertSuccess(boolean isSuccess) {
                             Log.i(TAG, "Completed");
-                            // Based on Success flag
+                            hideLoadingMsgSection();
+
                             if (isSuccess){
-                                hideLoadingMsgSection();
                                 startTheftActivity();
+                            } else {
+                                Log.e(TAG, "Error upserting user data");
+                                Toast.makeText(LoginActivity.this, getString(R.string.upsert_failed_message), Toast.LENGTH_LONG).show();
                             }
 
                         }
@@ -231,7 +234,6 @@ public class LoginActivity extends Activity {
             Log.i(TAG, "authentication success");
             mAuthData = authData;
             Log.i(TAG, "Auth data is : " + mAuthData);
-            //Toast.makeText(LoginActivity.this, "I am getting called", Toast.LENGTH_LONG).show();
             setAuthenticatedUser();
         }
 

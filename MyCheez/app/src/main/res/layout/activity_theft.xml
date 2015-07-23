@@ -122,15 +122,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="#fff">
-                <ListView
-                    android:id="@+id/historyListView"
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/historyList"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="10dp"
                     android:divider="@android:color/transparent"
-                    android:dividerHeight="10dp">
-                </ListView>
+                    android:dividerHeight="10dp"/>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
