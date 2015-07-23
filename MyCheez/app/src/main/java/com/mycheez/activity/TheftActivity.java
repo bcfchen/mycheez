@@ -21,6 +21,7 @@ import com.mycheez.firebase.FirebaseProxy;
 import com.mycheez.model.User;
 import com.mycheez.util.AnimationHandler;
 import com.mycheez.util.CircularImageView;
+import com.mycheez.util.RecyclerViewLinearLayoutManager;
 
 public class TheftActivity extends Activity {
 	CircularImageView userProfileImageView;
@@ -76,8 +77,8 @@ public class TheftActivity extends Activity {
                 } else {
                     userViewAdapter.setUser(user);
                 }
-			}
-		});
+            }
+        });
 
 		// bind cheese count
 		FirebaseProxy.getUserCheeseCount(currentUserFacebookId, new FirebaseProxy.UserCheeseCountCallback() {
@@ -144,7 +145,7 @@ public class TheftActivity extends Activity {
 	private void initializeTheftHistoryList(String facebookId){
 		historyList = ( RecyclerView )findViewById( R.id.historyList);
 		Query historyQuery = mFirebaseRef.child("history").child(facebookId);
-		LinearLayoutManager llm = new LinearLayoutManager(this);
+        RecyclerViewLinearLayoutManager llm = new RecyclerViewLinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 		historyList.setLayoutManager(llm);
 		historyListAdapter = new HistoryListAdapter(this, historyQuery);
 		historyList.setAdapter(historyListAdapter);
