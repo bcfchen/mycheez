@@ -42,7 +42,7 @@
 
     <!-- RankingsActivity -->
     <string name="rankings_page_title">RANKING</string>
-
+    <string name="get_user_ranking_failed_message">Could not retrieve your ranking. Please try again :( </string>
     <!-- Info messages -->
     <string name="no_network_message">No network detected, switching to offline mode</string>
     <string name="title_activity_flying_cheese">FlyingCheeseActivity</string>

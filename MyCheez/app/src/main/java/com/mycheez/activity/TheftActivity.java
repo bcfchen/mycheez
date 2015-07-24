@@ -126,14 +126,14 @@ public class TheftActivity extends Activity {
 		rankingsImageView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-		Intent intent = new Intent(TheftActivity.this, RankingsActivity.class);
-                try {
-                    intent.putExtra("facebookId", currentUserFacebookId);
-                    startActivity(intent);
-                } catch (Exception ex){
-                    String asdf = ex.toString();
-                }
-			}
+                Intent intent = new Intent(TheftActivity.this, RankingsActivity.class);
+                        try {
+                            intent.putExtra("facebookId", currentUserFacebookId);
+                            startActivity(intent);
+                        } catch (Exception ex){
+                            String asdf = ex.toString();
+                        }
+                    }
 
 		});
 	}

@@ -17,12 +17,14 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.client.Firebase;
 import com.firebase.client.Query;
 import com.mycheez.R;
 import com.mycheez.adapter.RankingsListAdapter;
 import com.mycheez.application.MyCheezApplication;
+import com.mycheez.firebase.FirebaseProxy;
 import com.mycheez.model.User;
 import com.mycheez.util.CircleTransform;
 import com.mycheez.util.RecyclerViewLinearLayoutManager;
@@ -99,7 +101,7 @@ public class RankingsActivity extends Activity {
 
 	private void populateUserRanking(int ranking, User currentUser)
 	{
-		userRankingTextView.setText(Integer.toString(ranking));
+		userRankingTextView.setText(getOrdinal(ranking));
 
 		if (ranking > 10)
 		{
@@ -124,9 +126,34 @@ public class RankingsActivity extends Activity {
 	}
 
     private void initializeUserRanking(){
-
+        FirebaseProxy.getUserRanking(currentUserFacebookId, new FirebaseProxy.UserRankingCallback() {
+            @Override
+            public void userRankingRetrieved(Integer rank, User currentUser) {
+                if (rank == null) {
+                    Toast.makeText(RankingsActivity.this, getString(R.string.get_user_ranking_failed_message), Toast.LENGTH_LONG).show();
+                } else {
+                    populateUserRanking(rank, currentUser);
+                }
+            }
+        });
     }
 
+    private String getOrdinal(int num)
+    {
+        String[] suffix = {"th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"};
+        int m = num % 100;
+        return Integer.toString(num) + suffix[(m > 10 && m < 20) ? 0 : (m % 10)];
+    }
+
+//    FirebaseProxy.doCheeseTheft(victim, new FirebaseProxy.CheeseTheftActionCallback() {
+//        @Override
+//        public void cheeseTheftPerformed(boolean isSuccess) {
+//            if (isSuccess) {
+//                //Only update theft history, IF theft success...
+//                FirebaseProxy.insertTheftHistory(victim.getFacebookId());
+//            }
+//        }
+//    });
 	private void initializeRankingsListView()
 	{
 		rankingsListView= (RecyclerView)findViewById( R.id.rankingsListView );

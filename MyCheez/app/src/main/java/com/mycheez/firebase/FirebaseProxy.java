@@ -2,6 +2,7 @@ package com.mycheez.firebase;
 
 import android.util.Log;
 
+import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -11,6 +12,7 @@ import com.mycheez.application.MyCheezApplication;
 import com.mycheez.model.History;
 import com.mycheez.model.User;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +62,7 @@ public class FirebaseProxy  {
 
     public static void insertNewUser(User currentuser, final UpsertUserCallBack callBack){
         Firebase currentUserRef = myCheezRef.child("users").child(currentuser.getFacebookId());
-        currentUserRef.setValue(currentuser, new Firebase.CompletionListener() {
+        currentUserRef.setValue(currentuser, "cheeseCount", new Firebase.CompletionListener() {
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {
                 if (firebaseError != null) {
@@ -76,7 +78,7 @@ public class FirebaseProxy  {
 
     public static void updateCurrentUser(User currentuser, final UpsertUserCallBack callBack){
         Firebase currentUserRef = myCheezRef.child("users").child(currentuser.getFacebookId());
-        currentUserRef.setValue(currentuser, new Firebase.CompletionListener() {
+        currentUserRef.setValue(currentuser, "cheeseCount", new Firebase.CompletionListener() {
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {
                 if (firebaseError != null) {
@@ -137,6 +139,30 @@ public class FirebaseProxy  {
             public void onCancelled(FirebaseError firebaseError) {
                 Log.i(TAG, "failed to get user cheesecount from Firebase");
                 callback.userCheeseCountRetrieved(null);
+            }
+        });
+    }
+
+    public static void getUserRanking(final String userFacebookId, final UserRankingCallback callback){
+        myCheezRef.child("users").setPriority("cheeseCount");
+        myCheezRef.child("users").orderByPriority().addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.i(TAG, "retrieved all users");
+                Map<String, Object> users = (Map<String, Object>) snapshot.getValue();
+                Integer pos = new ArrayList<>(users.keySet()).indexOf(userFacebookId);
+                HashMap retrievedUser = (HashMap)users.get(userFacebookId);
+                User currentUser = new User();
+                currentUser.setFirstName(retrievedUser.get("firstName").toString());
+                currentUser.setCheeseCount(Integer.parseInt(retrievedUser.get("cheeseCount").toString()));
+                currentUser.setProfilePicUrl(retrievedUser.get("profilePicUrl").toString());
+                callback.userRankingRetrieved(pos+1, currentUser);
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.e(TAG, "The read failed: " + firebaseError.getMessage());
+                callback.userRankingRetrieved(null, null);
             }
         });
     }
@@ -225,6 +251,10 @@ public class FirebaseProxy  {
     }
 
     /* All callback interfaces for signalling completion of the firebase operatios */
+
+    public interface UserRankingCallback{
+        void userRankingRetrieved(Integer rank, User currentUser);
+    }
 
     public interface UserCheeseCountCallback{
         void userCheeseCountRetrieved(Integer cheeseCount);

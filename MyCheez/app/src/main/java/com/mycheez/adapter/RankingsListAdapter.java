@@ -47,11 +47,6 @@ public class RankingsListAdapter extends RecyclerView.Adapter<RankingsListAdapte
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 User model = dataSnapshot.getValue(User.class);
 
-                // Dont add the current user to the players list
-                if(currentUserFacebookId.equals(model.getFacebookId())){
-                    return;
-                }
-
                 playerMap.put(dataSnapshot.getKey(), model);
                 // Insert into the correct location, based on previousChildName
                 if (previousChildName == null) {
