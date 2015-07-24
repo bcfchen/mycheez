@@ -2,7 +2,6 @@ package com.mycheez.firebase;
 
 import android.util.Log;
 
-import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -62,7 +61,7 @@ public class FirebaseProxy  {
 
     public static void insertNewUser(User currentuser, final UpsertUserCallBack callBack){
         Firebase currentUserRef = myCheezRef.child("users").child(currentuser.getFacebookId());
-        currentUserRef.setValue(currentuser, "cheeseCount", new Firebase.CompletionListener() {
+        currentUserRef.setValue(currentuser, currentuser.getCheeseCount(), new Firebase.CompletionListener() {
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {
                 if (firebaseError != null) {
@@ -78,7 +77,7 @@ public class FirebaseProxy  {
 
     public static void updateCurrentUser(User currentuser, final UpsertUserCallBack callBack){
         Firebase currentUserRef = myCheezRef.child("users").child(currentuser.getFacebookId());
-        currentUserRef.setValue(currentuser, "cheeseCount", new Firebase.CompletionListener() {
+        currentUserRef.setValue(currentuser, currentuser.getCheeseCount(), new Firebase.CompletionListener() {
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {
                 if (firebaseError != null) {
@@ -151,12 +150,12 @@ public class FirebaseProxy  {
                 Log.i(TAG, "retrieved all users");
                 Map<String, Object> users = (Map<String, Object>) snapshot.getValue();
                 Integer pos = new ArrayList<>(users.keySet()).indexOf(userFacebookId);
-                HashMap retrievedUser = (HashMap)users.get(userFacebookId);
+                HashMap retrievedUser = (HashMap) users.get(userFacebookId);
                 User currentUser = new User();
                 currentUser.setFirstName(retrievedUser.get("firstName").toString());
                 currentUser.setCheeseCount(Integer.parseInt(retrievedUser.get("cheeseCount").toString()));
                 currentUser.setProfilePicUrl(retrievedUser.get("profilePicUrl").toString());
-                callback.userRankingRetrieved(pos+1, currentUser);
+                callback.userRankingRetrieved(pos + 1, currentUser);
             }
 
             @Override
@@ -197,6 +196,7 @@ public class FirebaseProxy  {
         Map<String, Object> victimCheeseCountMap = new HashMap<String, Object>();
         victimCheeseCountMap.put("cheeseCount", victim.getCheeseCount()-1);
         victimCheeseCountMap.put("updatedAt", ServerValue.TIMESTAMP);
+        victimRef.setPriority(victim.getCheeseCount()-1);
         victimRef.updateChildren(victimCheeseCountMap, new Firebase.CompletionListener(){
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {
@@ -205,6 +205,7 @@ public class FirebaseProxy  {
                     Map<String, Object> thiefCheeseCountMap = new HashMap<String, Object>();
                     thiefCheeseCountMap.put("cheeseCount", (thief.getCheeseCount() + 1));
                     thiefCheeseCountMap.put("updatedAt", ServerValue.TIMESTAMP);
+                    currentUserRef.setPriority(thief.getCheeseCount() + 1);
                     currentUserRef.updateChildren(thiefCheeseCountMap);
                     theftCallback.cheeseTheftPerformed(true);
                 } else {
