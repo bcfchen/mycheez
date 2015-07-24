@@ -28,7 +28,11 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
-
+        <activity
+            android:name=".activity.RankingsActivity"
+            android:label="@string/title_activity_rankings"
+            android:theme="@android:style/Theme.NoTitleBar"  >
+        </activity>
         <activity android:name="com.facebook.FacebookActivity" />
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
