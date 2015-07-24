@@ -23,7 +23,6 @@ public class User {
     private Date createdAt;
     private String firstName;
     private List<String> friends = new ArrayList<>();
-    private Boolean isOnline;
     private String lastName;
     private String profilePicUrl;
     private Long updatedAt;

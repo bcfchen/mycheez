@@ -167,6 +167,7 @@ public class LoginActivity extends Activity {
                             if (isSuccess){
                                 // Set the user object in Appplication scope
                                 MyCheezApplication.setCurrentUser(currentUser);
+                                FirebaseProxy.setupUserPresence(currentUser);
                                 startTheftActivity();
                             } else {
                                 Log.e(TAG, "Error upserting user data");
@@ -211,7 +212,6 @@ public class LoginActivity extends Activity {
      */
     private void populateProfileInfoForUser() {
         currentUser.setFacebookId((String) mAuthData.getProviderData().get("id"));
-        currentUser.setIsOnline(true);
         Map<String,Object> userProfileData = (Map)mAuthData.getProviderData().get("cachedUserProfile");
         currentUser.setFirstName((String)userProfileData.get("first_name"));
         currentUser.setLastName((String)userProfileData.get(("last_name")));

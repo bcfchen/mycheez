@@ -189,6 +189,40 @@ public class FirebaseProxy  {
         });
     }
 
+    /**
+     * Firebase operation to track an user's presence, if playing MyCheez.
+     * On closing the app or disconnecting we update the online status to false
+     * This status to be used by Node server to send out notifications
+     * @param current
+     */
+    public static void setupUserPresence(User current){
+        Firebase firebaseConnectedRef = MyCheezApplication.getUserPresenceRef();
+        final Firebase userPresenceRefStatus = myCheezRef.child("presence").child(current.getFacebookId()).child("isOnline");
+        final Firebase userPresenceRefUpdatedAt = myCheezRef.child("presence").child(current.getFacebookId()).child("updatedAt");
+
+        firebaseConnectedRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                boolean connected = snapshot.getValue(Boolean.class);
+                if (connected) {
+                    Log.i(TAG, "Device connected ");
+                    userPresenceRefStatus.setValue(Boolean.TRUE);
+                    userPresenceRefStatus.onDisconnect().setValue(Boolean.FALSE);
+                    userPresenceRefUpdatedAt.onDisconnect().setValue(ServerValue.TIMESTAMP);
+                } else {
+                    Log.i(TAG, "Device dis-connected ");
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError error) {
+                System.err.println("Listener was cancelled");
+            }
+        });
+
+
+
+    }
 
     /* All callback interfaces for signalling completion of the firebase operatios */
 

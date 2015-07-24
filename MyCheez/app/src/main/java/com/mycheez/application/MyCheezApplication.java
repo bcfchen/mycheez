@@ -19,8 +19,9 @@ public class MyCheezApplication extends Application {
     private static boolean activityPaused;
     private static Firebase rootFirebaseRef;
     private static Firebase myCheezFirebaseRef;
-    private static User currentUser;
+    private static Firebase userPresenceRef;
 
+    private static User currentUser;
 
     @Override
     public void onCreate() {
@@ -32,6 +33,8 @@ public class MyCheezApplication extends Application {
 
         rootFirebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com");
         myCheezFirebaseRef = new Firebase("https://torrid-inferno-8611.firebaseio.com/mycheez");
+        userPresenceRef = new Firebase("https://torrid-inferno-8611.firebaseio.com/.info/connected");
+
 
      }
 
@@ -43,6 +46,12 @@ public class MyCheezApplication extends Application {
     public static Firebase getMyCheezFirebaseRef() {
         return myCheezFirebaseRef;
     }
+
+    public static Firebase getUserPresenceRef() {
+        return userPresenceRef;
+    }
+
+
 
     public static boolean isActivityRunning() {
         return activityRunning;
