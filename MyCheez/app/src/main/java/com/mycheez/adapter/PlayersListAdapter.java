@@ -6,8 +6,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.FirebaseError;
@@ -35,12 +38,15 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
     private Activity theftActivity;
     private String TAG = "PlayersList";
     private Map<Integer, Boolean> onClickLockMap;
+    private Animation pulseAnimation;
 
     public PlayersListAdapter(Activity activity, Query query, final String currentUserFacebookId) {
         this.theftActivity = activity;
         players = new ArrayList<>();
         playerMap =  new HashMap<>();
         onClickLockMap = new HashMap<>();
+
+        pulseAnimation = AnimationUtils.loadAnimation(theftActivity, R.anim.pulse);
 
         mRef = query;
 
@@ -188,12 +194,18 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
         playerViewHolder.playerImageView.setAlpha(0.2f);
         playerViewHolder.counterTextView.setAlpha(0.2f);
         playerViewHolder.playerImageView.setClickable(false);
+        playerViewHolder.playerImageView.startAnimation(pulseAnimation);
     }
 
     public void unlockImageClick(PlayerViewHolder playerViewHolder) {
         playerViewHolder.playerImageView.setAlpha(1f);
         playerViewHolder.counterTextView.setAlpha(1f);
         playerViewHolder.playerImageView.setClickable(true);
+
+        if(playerViewHolder.playerImageView.getAnimation() != null) {
+            playerViewHolder.playerImageView.getAnimation().cancel();
+        }
+
     }
 
     public void handleOnClickLock(boolean lockIt, PlayerViewHolder playerViewHolder, int position){
