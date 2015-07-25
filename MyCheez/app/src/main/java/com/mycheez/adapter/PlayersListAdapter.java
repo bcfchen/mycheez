@@ -135,6 +135,9 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
 
     @Override
     public void onBindViewHolder(final PlayerViewHolder playerViewHolder, final int position) {
+        if(!onClickLockMap.containsKey(position)){
+            onClickLockMap.put(position, true);
+        }
         final User player = players.get(position);
         playerViewHolder.counterTextView.setText(Integer.toString(player.getCheeseCount()));
         //use Picasso to load image into ImageView
@@ -225,6 +228,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
             counterTextView = (TextView)itemView.findViewById(R.id.counterTextView);
             playerImageView = (CircularImageView)itemView.findViewById(R.id.playerImageView);
             cheeseAnimationImageView = (ImageView) itemView.findViewById(R.id.cheeseAnimationImageView);
+
         }
     }
 
