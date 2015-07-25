@@ -29,9 +29,11 @@ import com.mycheez.R;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.firebase.FirebaseProxy;
 import com.mycheez.model.User;
+import com.mycheez.util.AuthenticationHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +52,7 @@ public class LoginActivity extends Activity {
     private AccessTokenTracker mFacebookAccessTokenTracker;
     /* Data from the authenticated user */
     private AuthData mAuthData;
-    private Firebase.AuthStateListener mAuthStateListener;
+    private AuthenticationHandler authHandler;
     private LinearLayout titleContainer;
     private LinearLayout loadingMsgSection;
     private static final String TAG = "loginActivity";
@@ -78,7 +80,7 @@ public class LoginActivity extends Activity {
         initializeFacebookLogin();
     }
 
-    private void initializeUIComponents(){
+    private void initializeUIComponents() {
         loginFBButton = (LoginButton) findViewById(R.id.loginButton);
         loginFBButton.setVisibility(View.GONE);
         loginFBButton.setReadPermissions(Arrays.asList("public_profile", "user_friends"));
@@ -88,7 +90,7 @@ public class LoginActivity extends Activity {
         titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
     }
 
-    private void initializeFacebookLogin(){
+    private void initializeFacebookLogin() {
         mFacebookCallbackManager = CallbackManager.Factory.create();
         mFacebookAccessTokenTracker = new AccessTokenTracker() {
             @Override
@@ -98,8 +100,8 @@ public class LoginActivity extends Activity {
         };
     }
 
-    private void doLoginAnimation(){
-        Animation animTranslate  = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.translate);
+    private void doLoginAnimation() {
+        Animation animTranslate = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.translate);
         animTranslate.setAnimationListener(new Animation.AnimationListener() {
 
             @Override
@@ -112,17 +114,34 @@ public class LoginActivity extends Activity {
 
             @Override
             public void onAnimationEnd(Animation arg0) {
-                mAuthData = mFirebaseRef.getAuth();
-                if (mAuthData != null) {
-                    setAuthenticatedUser();
-                } else {
-                    /* no user authenticated with Firebase
-                     * so display login button */
-                    LoginManager.getInstance().logOut();
-                    loginFBButton.setVisibility(View.VISIBLE);
-                    Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
-                    loginFBButton.startAnimation(animFade);
-                }
+                authHandler.validateUserAuthentication(new AuthenticationHandler.UserAuthenticationValidated() {
+                    @Override
+                    public void userAuthenticationValidated(Boolean isValid) {
+                        if (isValid) {
+                            mAuthData = mFirebaseRef.getAuth();
+                            setAuthenticatedUser();
+                        } else {
+                        /* no user authenticated with Firebase
+                        * so display login button */
+                            LoginManager.getInstance().logOut();
+                            loginFBButton.setVisibility(View.VISIBLE);
+                            Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
+                            loginFBButton.startAnimation(animFade);
+                        }
+                    }
+                });
+
+//                mAuthData = mFirebaseRef.getAuth();
+//                if (mAuthData != null) {
+//                    setAuthenticatedUser();
+//                } else {
+//                    /* no user authenticated with Firebase
+//                     * so display login button */
+//                    LoginManager.getInstance().logOut();
+//                    loginFBButton.setVisibility(View.VISIBLE);
+//                    Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
+//                    loginFBButton.startAnimation(animFade);
+//                }
             }
         });
         titleContainer.startAnimation(animTranslate);
@@ -148,7 +167,7 @@ public class LoginActivity extends Activity {
      * 3. Upsert current user in Firebase
      */
     private void setAuthenticatedUser() {
-        if(mAuthData !=null) {
+        if (mAuthData != null) {
             showLoadingMsgSection(getString(R.string.prep_steal_zone_message));
             populateProfileInfoForUser();
             GraphRequest meFriendsListRequest = generateFriendListRequest();
@@ -164,7 +183,7 @@ public class LoginActivity extends Activity {
                         public void isUpsertSuccess(boolean isSuccess) {
                             Log.i(TAG, "Completed");
                             hideLoadingMsgSection();
-                            if (isSuccess){
+                            if (isSuccess) {
                                 // Set the user object in Appplication scope
                                 MyCheezApplication.setCurrentUser(currentUser);
                                 FirebaseProxy.setupUserPresence(currentUser);
@@ -185,25 +204,26 @@ public class LoginActivity extends Activity {
 
     /**
      * Facebook graph api call to get Friends list of current user
+     *
      * @return
      */
     private GraphRequest generateFriendListRequest() {
         return GraphRequest.newMyFriendsRequest(AccessToken.getCurrentAccessToken(),
-                        new GraphRequest.GraphJSONArrayCallback() {
-                            @Override
-                            public void onCompleted(JSONArray jsonArray, GraphResponse response) {
-                                List<String> list = new ArrayList<>();
-                                try {
-                                    for(int i = 0; i < jsonArray.length(); i++){
-                                        // get friends Facebook ids
-                                       list.add(jsonArray.getJSONObject(i).getString("id"));
-                                    }
-                                } catch (JSONException e) {
-                                    Log.e(TAG, "Error parsing friends request ", e);
-                                }
-                                currentUser.setFriends(list);
+                new GraphRequest.GraphJSONArrayCallback() {
+                    @Override
+                    public void onCompleted(JSONArray jsonArray, GraphResponse response) {
+                        List<String> list = new ArrayList<>();
+                        try {
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                // get friends Facebook ids
+                                list.add(jsonArray.getJSONObject(i).getString("id"));
                             }
-                        });
+                        } catch (JSONException e) {
+                            Log.e(TAG, "Error parsing friends request ", e);
+                        }
+                        currentUser.setFriends(list);
+                    }
+                });
     }
 
     /**
@@ -212,11 +232,11 @@ public class LoginActivity extends Activity {
      */
     private void populateProfileInfoForUser() {
         currentUser.setFacebookId((String) mAuthData.getProviderData().get("id"));
-        Map<String,Object> userProfileData = (Map)mAuthData.getProviderData().get("cachedUserProfile");
-        currentUser.setFirstName((String)userProfileData.get("first_name"));
-        currentUser.setLastName((String)userProfileData.get(("last_name")));
-        Map<String, Object> pictureData = (Map)userProfileData.get(("picture"));
-        currentUser.setProfilePicUrl((String)((Map)pictureData.get("data")).get("url"));
+        Map<String, Object> userProfileData = (Map) mAuthData.getProviderData().get("cachedUserProfile");
+        currentUser.setFirstName((String) userProfileData.get("first_name"));
+        currentUser.setLastName((String) userProfileData.get(("last_name")));
+        Map<String, Object> pictureData = (Map) userProfileData.get(("picture"));
+        currentUser.setProfilePicUrl((String) ((Map) pictureData.get("data")).get("url"));
     }
 
     /**
@@ -246,7 +266,7 @@ public class LoginActivity extends Activity {
 
     private void showLoadingMsgSection(String message) {
         loadingMsgSection.setVisibility(View.VISIBLE);
-        Animation animFade  = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
+        Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
         loadingMsgSection.startAnimation(animFade);
         loadingText.setText(message);
     }
@@ -256,7 +276,7 @@ public class LoginActivity extends Activity {
     }
 
     private void checkNetworkAvailability() {
-        ConnectivityManager cm = (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         if (networkInfo == null) {
             Toast.makeText(this, R.string.no_network_message, Toast.LENGTH_LONG).show();
@@ -266,11 +286,10 @@ public class LoginActivity extends Activity {
 
     private void startTheftActivity() {
         Intent intent = new Intent(LoginActivity.this, TheftActivity.class);
-        intent.putExtra("facebookId",currentUser.getFacebookId());
+        intent.putExtra("facebookId", currentUser.getFacebookId());
         startActivity(intent);
         finish();
     }
-
 
 
 }
