@@ -40,7 +40,6 @@ public class FirebaseProxy  {
                 if (snapshot.getValue() != null) {
                     Log.i(TAG, "user exists, update it");
                     User userOnFirebase = snapshot.getValue(User.class);
-                    Log.i(TAG, "Firebase User is : " + userOnFirebase);
                     //IMPORTANT : Leave the cheese count and creation as it is.
                     currentUser.setCheeseCount(userOnFirebase.getCheeseCount());
                     currentUser.setCreatedAt(userOnFirebase.getCreatedAt());
@@ -129,7 +128,6 @@ public class FirebaseProxy  {
         myCheezRef.child("users").child(facebookId).child("cheeseCount").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                Log.i(TAG, "cheese count changed in Firebase");
                 Integer updatedCheeseCount = snapshot.getValue(Integer.class);
                 callback.userCheeseCountRetrieved(updatedCheeseCount);
             }
@@ -143,7 +141,6 @@ public class FirebaseProxy  {
     }
 
     public static void getUserRanking(final String userFacebookId, final UserRankingCallback callback){
-        myCheezRef.child("users").setPriority("cheeseCount");
         myCheezRef.child("users").orderByPriority().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {

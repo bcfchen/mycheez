@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -158,6 +159,8 @@ public class TheftActivity extends Activity {
 
 
 	public void onCheeseTheft(View friendImageClicked, final User victim, ImageView movedCheeseImg){
+
+		Log.i(TAG, "Victim is : " + victim);
     	/* display animation and start cheese theft async process */
 		animationHandler.animateCheeseTheft(friendImageClicked, movedCheeseImg, userProfileImageView);
 

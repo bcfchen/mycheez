@@ -34,11 +34,14 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
     private Query mRef;
     private Activity theftActivity;
     private String TAG = "PlayersList";
+    private Map<Integer, Boolean> onClickLockMap;
 
     public PlayersListAdapter(Activity activity, Query query, final String currentUserFacebookId) {
         this.theftActivity = activity;
         players = new ArrayList<>();
         playerMap =  new HashMap<>();
+        onClickLockMap = new HashMap<>();
+
         mRef = query;
 
         mListener = this.mRef.addChildEventListener(new ChildEventListener() {
@@ -67,7 +70,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                         players.add(nextIndex, model);
                     }
                 }
-
+                onClickLockMap.put(nextIndex, true);
                 notifyItemInserted(nextIndex);
             }
 
@@ -141,7 +144,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                 .centerCrop()
                 .into(playerViewHolder.playerImageView);
 
-        setOnClickListenerOnPlayers(playerViewHolder, position, player);
+        setOnClickListenerOnPlayers(playerViewHolder, position);
     }
 
     /**
@@ -149,17 +152,24 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
      * based on their current cheese counts. Stealable vs Non-stealable.
      * @param playerViewHolder
      * @param position
-     * @param player
+     *
      */
-    private void setOnClickListenerOnPlayers(final PlayerViewHolder playerViewHolder, final int position, final User player) {
-        if(areThereEnoughCheese(player.getCheeseCount())){
+    private void setOnClickListenerOnPlayers(final PlayerViewHolder playerViewHolder, final int position) {
+        if(canCheeseBeStolenAtThisLocation(players.get(position).getCheeseCount(), position)){
             unlockImageClick(playerViewHolder);
             playerViewHolder.playerImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.i(TAG, "Victim is : " + position + " : " + player);
-                    ((TheftActivity)theftActivity).onCheeseTheft(playerViewHolder.playerImageView, player,
+                    handleOnClickLock(true, playerViewHolder, position);
+                    ((TheftActivity)theftActivity).onCheeseTheft(playerViewHolder.playerImageView, players.get(position),
                             playerViewHolder.cheeseAnimationImageView);
+
+                    v.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            handleOnClickLock(false, playerViewHolder, position);
+                        }
+                    },6000);
                 }
             });
         } else {
@@ -167,8 +177,8 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
         }
     }
 
-    private boolean areThereEnoughCheese(int cheeseCount) {
-        return cheeseCount > 0;
+    private boolean canCheeseBeStolenAtThisLocation(int cheeseCount , int position) {
+        return cheeseCount > 0 && onClickLockMap.get(position);
     }
 
     public void lockImageClick(PlayerViewHolder playerViewHolder) {
@@ -183,6 +193,21 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
         playerViewHolder.playerImageView.setClickable(true);
     }
 
+    public void handleOnClickLock(boolean lockIt, PlayerViewHolder playerViewHolder, int position){
+        if(lockIt){
+            lockImageClick(playerViewHolder);
+            onClickLockMap.put(position, false);
+        } else {
+            onClickLockMap.put(position, true);
+
+            // Only unlock is count is > 0, otherwise keep it locked
+            User player = players.get(position);
+            if(player.getCheeseCount() > 0){
+                unlockImageClick(playerViewHolder);
+            }
+
+        }
+    }
 
     @Override
     public int getItemCount() {
