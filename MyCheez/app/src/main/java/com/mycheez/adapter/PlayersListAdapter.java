@@ -1,6 +1,7 @@
 package com.mycheez.adapter;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -160,9 +161,9 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
     private void setOnlineStatus(PlayerViewHolder playerViewHolder, int position) {
         User player = players.get(position);
         if(player.getIsOnline() && player.getCheeseCount() > 0){
-            playerViewHolder.playerImageView.startAnimation(pulseAnimation);
+            playerViewHolder.playerImageView.setBorderColor(Color.GREEN);
         }else {
-            playerViewHolder.playerImageView.clearAnimation();
+            playerViewHolder.playerImageView.setBorderColor(Color.RED);
         }
     }
 

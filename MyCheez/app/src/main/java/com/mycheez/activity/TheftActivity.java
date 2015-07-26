@@ -186,7 +186,7 @@ public class TheftActivity extends Activity {
 	}
 
     @Override
-    public void onStop() {
+    public void onPause() {
         MyCheezApplication.getMyCheezFirebaseRef().getApp().goOffline();
         super.onStop();
     }
