@@ -13,10 +13,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.facebook.AccessToken;
-import com.facebook.AccessTokenTracker;
-import com.facebook.CallbackManager;
 import com.facebook.GraphRequest;
 import com.facebook.GraphRequestBatch;
 import com.facebook.GraphResponse;
@@ -24,20 +21,15 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.widget.LoginButton;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
 import com.mycheez.R;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.firebase.FirebaseProxy;
 import com.mycheez.model.User;
 import com.mycheez.util.AuthenticationHandler;
-
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +37,6 @@ public class LoginActivity extends Activity {
 
     private TextView loadingText;
     private LoginButton loginFBButton;
-    private double timeLeft = 0d;
     private Firebase mFirebaseRef;
     /* Data from the authenticated user */
     private AuthenticationHandler authHandler;
@@ -72,6 +63,10 @@ public class LoginActivity extends Activity {
         initializeUIComponents();
         mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
         doLoginAnimation();
+        initializeAuthentication();
+    }
+
+    private void initializeAuthentication() {
         authHandler = new AuthenticationHandler();
         authHandler.initialize(new AuthenticationHandler.FacebookAuthenticationValidated() {
             @Override
@@ -92,7 +87,6 @@ public class LoginActivity extends Activity {
                 }
             }
         });
-        //initializeFacebookLogin();
     }
 
     private void initializeUIComponents() {
@@ -165,7 +159,7 @@ public class LoginActivity extends Activity {
                             Log.i(TAG, "Completed");
                             hideLoadingMsgSection();
                             if (isSuccess) {
-                                // Set the user object in Appplication scope
+                                // Set the user object in Application scope
                                 MyCheezApplication.setCurrentUser(currentUser);
                                 FirebaseProxy.setupUserPresence(currentUser);
                                 startTheftActivity();

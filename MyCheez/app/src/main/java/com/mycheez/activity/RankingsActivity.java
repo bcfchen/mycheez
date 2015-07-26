@@ -1,14 +1,5 @@
 package com.mycheez.activity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -145,20 +136,11 @@ public class RankingsActivity extends Activity {
         return Integer.toString(num) + suffix[(m > 10 && m < 20) ? 0 : (m % 10)];
     }
 
-//    FirebaseProxy.doCheeseTheft(victim, new FirebaseProxy.CheeseTheftActionCallback() {
-//        @Override
-//        public void cheeseTheftPerformed(boolean isSuccess) {
-//            if (isSuccess) {
-//                //Only update theft history, IF theft success...
-//                FirebaseProxy.insertTheftHistory(victim.getFacebookId());
-//            }
-//        }
-//    });
 	private void initializeRankingsListView()
 	{
 		rankingsListView= (RecyclerView)findViewById( R.id.rankingsListView );
         Query topTenUsersQuery = mFirebaseRef.child("users").orderByChild("cheeseCount").limitToLast(10);
-        RecyclerViewLinearLayoutManager llm = new RecyclerViewLinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager llm = new LinearLayoutManager(this);
         rankingsListView.setLayoutManager(llm);
         rankingsListAdapter = new RankingsListAdapter( this, topTenUsersQuery,currentUserFacebookId);
 		rankingsListView.setAdapter( rankingsListAdapter );

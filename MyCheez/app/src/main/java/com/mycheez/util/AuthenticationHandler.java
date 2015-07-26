@@ -3,7 +3,6 @@ package com.mycheez.util;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -61,7 +60,6 @@ public class AuthenticationHandler {
         if (token != null) {
             System.out.println("About to call : " + new Date());
             facebookAuthCallback.facebookAuthenticationValidated(true);
-            //loginFBButton.setVisibility(View.GONE);
             mFirebaseRef.authWithOAuthToken("facebook", token.getToken(), new AuthResultHandler("facebook"));
         } else {
             // Logged out of Facebook and currently authenticated with Firebase using Facebook, so do a logout
@@ -86,7 +84,6 @@ public class AuthenticationHandler {
             Log.i(TAG, "Auth data is : " + mAuthData);
 
             firebaseAuthCallback.firebaseAuthenticationValidated(true, mAuthData);
-            //setAuthenticatedUser();
         }
 
         @Override
