@@ -75,7 +75,7 @@ public class FirebaseProxy  {
 
     public static void updateCurrentUser(User currentuser, final UpsertUserCallBack callBack){
         Firebase currentUserRef = myCheezRef.child("users").child(currentuser.getFacebookId());
-        currentUserRef.setValue(currentuser, currentuser.getCheeseCount(), new Firebase.CompletionListener() {
+        currentUserRef.setValue(currentuser, -currentuser.getCheeseCount(), new Firebase.CompletionListener() {
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {
                 if (firebaseError != null) {
@@ -194,7 +194,7 @@ public class FirebaseProxy  {
         victimCheeseCountMap.put("cheeseCount", newVictimCheeseCount);
         victimCheeseCountMap.put("updatedAt", ServerValue.TIMESTAMP);
         if(newVictimCheeseCount >= 0) {
-            victimRef.setPriority(newVictimCheeseCount);
+            victimRef.setPriority(-newVictimCheeseCount);
             victimRef.updateChildren(victimCheeseCountMap, new Firebase.CompletionListener() {
                 @Override
                 public void onComplete(FirebaseError firebaseError, Firebase firebase) {
@@ -207,7 +207,7 @@ public class FirebaseProxy  {
                         int newThiefCheeseCount = thief.getCheeseCount() + 1;
                         thiefCheeseCountMap.put("cheeseCount", newThiefCheeseCount);
                         thiefCheeseCountMap.put("updatedAt", ServerValue.TIMESTAMP);
-                        currentUserRef.setPriority(newThiefCheeseCount);
+                        currentUserRef.setPriority(-newThiefCheeseCount);
                         currentUserRef.updateChildren(thiefCheeseCountMap);
 
                         thief.setCheeseCount(newThiefCheeseCount);

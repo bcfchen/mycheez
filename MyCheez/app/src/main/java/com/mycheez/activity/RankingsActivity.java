@@ -18,7 +18,6 @@ import com.mycheez.application.MyCheezApplication;
 import com.mycheez.firebase.FirebaseProxy;
 import com.mycheez.model.User;
 import com.mycheez.util.CircleTransform;
-import com.mycheez.util.RecyclerViewLinearLayoutManager;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
@@ -139,7 +138,7 @@ public class RankingsActivity extends Activity {
 	private void initializeRankingsListView()
 	{
 		rankingsListView= (RecyclerView)findViewById( R.id.rankingsListView );
-        Query topTenUsersQuery = mFirebaseRef.child("users").orderByChild("cheeseCount").limitToLast(10);
+        Query topTenUsersQuery = mFirebaseRef.child("users").limitToLast(10);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         rankingsListView.setLayoutManager(llm);
         rankingsListAdapter = new RankingsListAdapter( this, topTenUsersQuery,currentUserFacebookId);
