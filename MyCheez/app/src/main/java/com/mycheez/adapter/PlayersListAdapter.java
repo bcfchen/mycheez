@@ -133,9 +133,30 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
     }
 
     @Override
-    public PlayerViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public PlayerViewHolder onCreateViewHolder(ViewGroup viewGroup, final int viewType) {
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.player_row, viewGroup, false);
-        PlayerViewHolder cvh = new PlayerViewHolder(v);
+
+        // Better way to setup onlick listeners
+        PlayerViewHolder cvh = new PlayerViewHolder(v, new PlayerViewHolder.SetupPlayerOnClicks() {
+            @Override
+            public void doOnClick(PlayerViewHolder holder) {
+                final PlayerViewHolder tempHolder = holder;
+                final int position = tempHolder.getPosition();
+                final ImageView playerImage = tempHolder.playerImageView;
+                final ImageView cheeseAnimationImageView = holder.cheeseAnimationImageView;
+
+                handleOnClickLock(true, tempHolder, position);
+
+                ((TheftActivity)theftActivity).onCheeseTheft(playerImage, players.get(position), cheeseAnimationImageView);
+
+                playerImage.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        handleOnClickLock(false, tempHolder, position);
+                    }
+                }, 5000);
+            }
+        });
         return cvh;
     }
 
@@ -177,21 +198,6 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
     private void setOnClickListenerOnPlayers(final PlayerViewHolder playerViewHolder, final int position) {
         if(canCheeseBeStolenAtThisLocation(players.get(position).getCheeseCount(), position)){
             unlockImageClick(playerViewHolder);
-            playerViewHolder.playerImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    handleOnClickLock(true, playerViewHolder, position);
-                    ((TheftActivity)theftActivity).onCheeseTheft(playerViewHolder.playerImageView, players.get(position),
-                            playerViewHolder.cheeseAnimationImageView);
-
-                    v.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            handleOnClickLock(false, playerViewHolder, position);
-                        }
-                    },5000);
-                }
-            });
         } else {
             lockImageClick(playerViewHolder);
         }
@@ -233,18 +239,30 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
         return players.size();
     }
 
-    public static class PlayerViewHolder extends RecyclerView.ViewHolder {
+    public static class PlayerViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener{
 
         TextView counterTextView;
         CircularImageView playerImageView;
         ImageView cheeseAnimationImageView;
+        SetupPlayerOnClicks playerClickListener;
 
-        PlayerViewHolder(View itemView) {
+        PlayerViewHolder(View itemView, SetupPlayerOnClicks listener) {
             super(itemView);
+            playerClickListener = listener;
             counterTextView = (TextView)itemView.findViewById(R.id.counterTextView);
             playerImageView = (CircularImageView)itemView.findViewById(R.id.playerImageView);
             cheeseAnimationImageView = (ImageView) itemView.findViewById(R.id.cheeseAnimationImageView);
+            playerImageView.setOnClickListener(this);
+        }
 
+        @Override
+        public void onClick(View v) {
+            playerClickListener.doOnClick(this);
+        }
+
+
+        public interface SetupPlayerOnClicks {
+            void doOnClick(PlayerViewHolder holder);
         }
     }
 
