@@ -47,11 +47,7 @@ public class LoginActivity extends Activity {
     private LoginButton loginFBButton;
     private double timeLeft = 0d;
     private Firebase mFirebaseRef;
-    private CallbackManager mFacebookCallbackManager;
-    /* Used to track user logging in/out off Facebook */
-    private AccessTokenTracker mFacebookAccessTokenTracker;
     /* Data from the authenticated user */
-    private AuthData mAuthData;
     private AuthenticationHandler authHandler;
     private LinearLayout titleContainer;
     private LinearLayout loadingMsgSection;
@@ -68,16 +64,35 @@ public class LoginActivity extends Activity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
+        authHandler.triggerOnActivityResult(requestCode, resultCode, data);
     }
 
     private void initialize() {
         // initialize layouts
         initializeUIComponents();
-        // initialize Firebase reference
         mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
         doLoginAnimation();
-        initializeFacebookLogin();
+        authHandler = new AuthenticationHandler();
+        authHandler.initialize(new AuthenticationHandler.FacebookAuthenticationValidated() {
+            @Override
+            public void facebookAuthenticationValidated(Boolean isValid) {
+                if (isValid) {
+                    loginFBButton.setVisibility(View.GONE);
+                } else {
+                    Toast.makeText(LoginActivity.this, getString(R.string.login_failed_message), Toast.LENGTH_LONG).show();
+                }
+            }
+        }, new AuthenticationHandler.FirebaseAuthenticationValidated() {
+            @Override
+            public void firebaseAuthenticationValidated(Boolean isValid, AuthData authData) {
+                if (isValid) {
+                    setAuthenticatedUser(authData);
+                } else {
+                    Toast.makeText(LoginActivity.this, getString(R.string.login_failed_message), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        //initializeFacebookLogin();
     }
 
     private void initializeUIComponents() {
@@ -90,15 +105,6 @@ public class LoginActivity extends Activity {
         titleContainer = (LinearLayout) findViewById(R.id.titleContainer);
     }
 
-    private void initializeFacebookLogin() {
-        mFacebookCallbackManager = CallbackManager.Factory.create();
-        mFacebookAccessTokenTracker = new AccessTokenTracker() {
-            @Override
-            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
-                onFacebookAccessTokenChange(currentAccessToken);
-            }
-        };
-    }
 
     private void doLoginAnimation() {
         Animation animTranslate = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.translate);
@@ -118,8 +124,8 @@ public class LoginActivity extends Activity {
                     @Override
                     public void userAuthenticationValidated(Boolean isValid) {
                         if (isValid) {
-                            mAuthData = mFirebaseRef.getAuth();
-                            setAuthenticatedUser();
+                            AuthData authData = mFirebaseRef.getAuth();
+                            setAuthenticatedUser(authData);
                         } else {
                         /* no user authenticated with Firebase
                         * so display login button */
@@ -130,34 +136,9 @@ public class LoginActivity extends Activity {
                         }
                     }
                 });
-
-//                mAuthData = mFirebaseRef.getAuth();
-//                if (mAuthData != null) {
-//                    setAuthenticatedUser();
-//                } else {
-//                    /* no user authenticated with Firebase
-//                     * so display login button */
-//                    LoginManager.getInstance().logOut();
-//                    loginFBButton.setVisibility(View.VISIBLE);
-//                    Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
-//                    loginFBButton.startAnimation(animFade);
-//                }
             }
         });
         titleContainer.startAnimation(animTranslate);
-    }
-
-    private void onFacebookAccessTokenChange(AccessToken token) {
-        if (token != null) {
-            System.out.println("About to call : " + new Date());
-            loginFBButton.setVisibility(View.GONE);
-            mFirebaseRef.authWithOAuthToken("facebook", token.getToken(), new AuthResultHandler("facebook"));
-        } else {
-            // Logged out of Facebook and currently authenticated with Firebase using Facebook, so do a logout
-            if (this.mAuthData != null && this.mAuthData.getProvider().equals("facebook")) {
-                mFirebaseRef.unauth();
-            }
-        }
     }
 
     /**
@@ -166,10 +147,10 @@ public class LoginActivity extends Activity {
      * 2. Call Facebook graph api to get friends list
      * 3. Upsert current user in Firebase
      */
-    private void setAuthenticatedUser() {
-        if (mAuthData != null) {
+    private void setAuthenticatedUser(AuthData authData) {
+        if (authData != null) {
             showLoadingMsgSection(getString(R.string.prep_steal_zone_message));
-            populateProfileInfoForUser();
+            populateProfileInfoForUser(authData);
             GraphRequest meFriendsListRequest = generateFriendListRequest();
             GraphRequestBatch batch = new GraphRequestBatch(meFriendsListRequest);
             batch.addCallback(new GraphRequestBatch.Callback() {
@@ -230,38 +211,13 @@ public class LoginActivity extends Activity {
      * Method used for populating basic profile info of current user
      * from auth data
      */
-    private void populateProfileInfoForUser() {
-        currentUser.setFacebookId((String) mAuthData.getProviderData().get("id"));
-        Map<String, Object> userProfileData = (Map) mAuthData.getProviderData().get("cachedUserProfile");
+    private void populateProfileInfoForUser(AuthData authData) {
+        currentUser.setFacebookId((String) authData.getProviderData().get("id"));
+        Map<String, Object> userProfileData = (Map) authData.getProviderData().get("cachedUserProfile");
         currentUser.setFirstName((String) userProfileData.get("first_name"));
         currentUser.setLastName((String) userProfileData.get(("last_name")));
         Map<String, Object> pictureData = (Map) userProfileData.get(("picture"));
         currentUser.setProfilePicUrl((String) ((Map) pictureData.get("data")).get("url"));
-    }
-
-    /**
-     * Utility class for authentication results
-     */
-    private class AuthResultHandler implements Firebase.AuthResultHandler {
-
-        private final String provider;
-
-        public AuthResultHandler(String provider) {
-            this.provider = provider;
-        }
-
-        @Override
-        public void onAuthenticated(AuthData authData) {
-            Log.i(TAG, "authentication success");
-            mAuthData = authData;
-            Log.i(TAG, "Auth data is : " + mAuthData);
-            setAuthenticatedUser();
-        }
-
-        @Override
-        public void onAuthenticationError(FirebaseError firebaseError) {
-            Log.e(TAG, "authentication failed with error: " + firebaseError.getDetails());
-        }
     }
 
     private void showLoadingMsgSection(String message) {
