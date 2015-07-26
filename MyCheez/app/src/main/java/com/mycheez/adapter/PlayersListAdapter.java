@@ -154,7 +154,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                     public void run() {
                         handleOnClickLock(false, tempHolder, position);
                     }
-                }, 5000);
+                }, 3000);
             }
         });
         return cvh;

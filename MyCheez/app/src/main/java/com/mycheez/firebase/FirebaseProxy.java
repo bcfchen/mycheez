@@ -190,26 +190,38 @@ public class FirebaseProxy  {
         final User thief = MyCheezApplication.getCurrentUser();
         Firebase victimRef = myCheezRef.child("users").child(victim.getFacebookId());
         Map<String, Object> victimCheeseCountMap = new HashMap<String, Object>();
-        victimCheeseCountMap.put("cheeseCount", victim.getCheeseCount()-1);
+        final int newVictimCheeseCount = victim.getCheeseCount() - 1;
+        victimCheeseCountMap.put("cheeseCount", newVictimCheeseCount);
         victimCheeseCountMap.put("updatedAt", ServerValue.TIMESTAMP);
-        victimRef.setPriority(victim.getCheeseCount()-1);
-        victimRef.updateChildren(victimCheeseCountMap, new Firebase.CompletionListener(){
-            @Override
-            public void onComplete(FirebaseError firebaseError, Firebase firebase) {
-                if(firebaseError == null){
-                    Firebase currentUserRef = myCheezRef.child("users").child(thief.getFacebookId());
-                    Map<String, Object> thiefCheeseCountMap = new HashMap<String, Object>();
-                    thiefCheeseCountMap.put("cheeseCount", (thief.getCheeseCount() + 1));
-                    thiefCheeseCountMap.put("updatedAt", ServerValue.TIMESTAMP);
-                    currentUserRef.setPriority(thief.getCheeseCount() + 1);
-                    currentUserRef.updateChildren(thiefCheeseCountMap);
-                    theftCallback.cheeseTheftPerformed(true);
-                } else {
-                    Log.e(TAG, "Error performing theft: " + firebaseError.getMessage());
-                    theftCallback.cheeseTheftPerformed(false);
+        if(newVictimCheeseCount >= 0) {
+            victimRef.setPriority(newVictimCheeseCount);
+            victimRef.updateChildren(victimCheeseCountMap, new Firebase.CompletionListener() {
+                @Override
+                public void onComplete(FirebaseError firebaseError, Firebase firebase) {
+                    if (firebaseError == null) {
+
+                        victim.setCheeseCount(newVictimCheeseCount);
+
+                        Firebase currentUserRef = myCheezRef.child("users").child(thief.getFacebookId());
+                        Map<String, Object> thiefCheeseCountMap = new HashMap<String, Object>();
+                        int newThiefCheeseCount = thief.getCheeseCount() + 1;
+                        thiefCheeseCountMap.put("cheeseCount", newThiefCheeseCount);
+                        thiefCheeseCountMap.put("updatedAt", ServerValue.TIMESTAMP);
+                        currentUserRef.setPriority(newThiefCheeseCount);
+                        currentUserRef.updateChildren(thiefCheeseCountMap);
+
+                        thief.setCheeseCount(newThiefCheeseCount);
+                        theftCallback.cheeseTheftPerformed(true);
+                    } else {
+                        Log.e(TAG, "Error performing theft: " + firebaseError.getMessage());
+                        theftCallback.cheeseTheftPerformed(false);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            Log.e(TAG, "Cheese count 0 cannot steal ....");
+            theftCallback.cheeseTheftPerformed(false);
+        }
     }
 
     /**
