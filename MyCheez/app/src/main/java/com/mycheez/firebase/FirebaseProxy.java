@@ -33,7 +33,6 @@ public class FirebaseProxy  {
      * @param callback
      */
     public static void upsertCurrentUser(final User currentUser, final UpsertUserCallBack callback){
-
         myCheezRef.child("users").child(currentUser.getFacebookId()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -224,6 +223,8 @@ public class FirebaseProxy  {
         final Firebase userPresenceRefStatus = myCheezRef.child("presence").child(current.getFacebookId()).child("isOnline");
         final Firebase userPresenceRefUpdatedAt = myCheezRef.child("presence").child(current.getFacebookId()).child("updatedAt");
 
+        final Firebase currentUserPresenceRef = myCheezRef.child("users").child(current.getFacebookId()).child("isOnline");
+
         firebaseConnectedRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -231,6 +232,9 @@ public class FirebaseProxy  {
                 if (connected) {
                     Log.i(TAG, "Device connected ");
                     userPresenceRefStatus.setValue(Boolean.TRUE);
+                    currentUserPresenceRef.setValue((Boolean.TRUE));
+
+                    currentUserPresenceRef.onDisconnect().setValue(Boolean.FALSE);
                     userPresenceRefStatus.onDisconnect().setValue(Boolean.FALSE);
                     userPresenceRefUpdatedAt.onDisconnect().setValue(ServerValue.TIMESTAMP);
                 } else {

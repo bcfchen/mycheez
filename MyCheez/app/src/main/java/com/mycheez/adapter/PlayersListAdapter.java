@@ -84,7 +84,6 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 // One of the mModels changed. Replace it in our list and name mapping
                 String modelName = dataSnapshot.getKey();
-                //User model = dataSnapshot.getValue(User.class);
                 // Dont add the current user to the players list
                 if(currentUserFacebookId.equals(modelName)){
                     return;
@@ -153,7 +152,18 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                 .centerCrop()
                 .into(playerViewHolder.playerImageView);
 
+        setOnlineStatus(playerViewHolder, position);
         setOnClickListenerOnPlayers(playerViewHolder, position);
+    }
+
+
+    private void setOnlineStatus(PlayerViewHolder playerViewHolder, int position) {
+        User player = players.get(position);
+        if(player.getIsOnline() && player.getCheeseCount() > 0){
+            playerViewHolder.playerImageView.startAnimation(pulseAnimation);
+        }else {
+            playerViewHolder.playerImageView.clearAnimation();
+        }
     }
 
     /**
@@ -178,7 +188,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                         public void run() {
                             handleOnClickLock(false, playerViewHolder, position);
                         }
-                    },6000);
+                    },5000);
                 }
             });
         } else {
@@ -194,18 +204,12 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
         playerViewHolder.playerImageView.setAlpha(0.2f);
         playerViewHolder.counterTextView.setAlpha(0.2f);
         playerViewHolder.playerImageView.setClickable(false);
-        playerViewHolder.playerImageView.startAnimation(pulseAnimation);
     }
 
     public void unlockImageClick(PlayerViewHolder playerViewHolder) {
         playerViewHolder.playerImageView.setAlpha(1f);
         playerViewHolder.counterTextView.setAlpha(1f);
         playerViewHolder.playerImageView.setClickable(true);
-
-        if(playerViewHolder.playerImageView.getAnimation() != null) {
-            playerViewHolder.playerImageView.getAnimation().cancel();
-        }
-
     }
 
     public void handleOnClickLock(boolean lockIt, PlayerViewHolder playerViewHolder, int position){
@@ -214,7 +218,6 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
             onClickLockMap.put(position, false);
         } else {
             onClickLockMap.put(position, true);
-
             // Only unlock is count is > 0, otherwise keep it locked
             User player = players.get(position);
             if(player.getCheeseCount() > 0){

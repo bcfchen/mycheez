@@ -6,6 +6,6 @@
     android:pivotY="50%"
     android:repeatCount="infinite"
     android:repeatMode="reverse"
-    android:toXScale="0.75"
-    android:toYScale="0.75" />
+    android:toXScale="0.90"
+    android:toYScale="0.90" />
 
