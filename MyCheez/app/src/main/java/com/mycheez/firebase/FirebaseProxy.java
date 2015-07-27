@@ -29,6 +29,7 @@ public class FirebaseProxy  {
      * OR
      * When an existing user opens the app
      * We try to update Firebase with the latest info for that user at that point in time.
+     * And also set the priority with -ve cheeseCount
      * @param currentUser
      * @param callback
      */
@@ -59,7 +60,7 @@ public class FirebaseProxy  {
 
     public static void insertNewUser(User currentuser, final UpsertUserCallBack callBack){
         Firebase currentUserRef = myCheezRef.child("users").child(currentuser.getFacebookId());
-        currentUserRef.setValue(currentuser, currentuser.getCheeseCount(), new Firebase.CompletionListener() {
+        currentUserRef.setValue(currentuser, -currentuser.getCheeseCount(), new Firebase.CompletionListener() {
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {
                 if (firebaseError != null) {
