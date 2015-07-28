@@ -2,6 +2,8 @@ package com.mycheez.firebase;
 
 import android.util.Log;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -12,9 +14,15 @@ import com.mycheez.model.History;
 import com.mycheez.model.User;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by ahetawal on 7/19/15.
@@ -141,18 +149,33 @@ public class FirebaseProxy  {
     }
 
     public static void getUserRanking(final String userFacebookId, final UserRankingCallback callback){
-        myCheezRef.child("users").orderByPriority().addListenerForSingleValueEvent(new ValueEventListener() {
+        myCheezRef.child("users").
+        addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 Log.i(TAG, "retrieved all users");
                 Map<String, Object> users = (Map<String, Object>) snapshot.getValue();
                 Integer pos = new ArrayList<>(users.keySet()).indexOf(userFacebookId);
-                HashMap retrievedUser = (HashMap) users.get(userFacebookId);
+                ObjectMapper mapper = new ObjectMapper();
+
+                List<User> usersList = new ArrayList<User>();
                 User currentUser = new User();
-                currentUser.setFirstName(retrievedUser.get("firstName").toString());
-                currentUser.setCheeseCount(Integer.parseInt(retrievedUser.get("cheeseCount").toString()));
-                currentUser.setProfilePicUrl(retrievedUser.get("profilePicUrl").toString());
-                callback.userRankingRetrieved(pos + 1, currentUser);
+                for (Object userObject : users.values()) {
+                    User convertedUser = mapper.convertValue(userObject, User.class);
+                    usersList.add(convertedUser);
+                    if (convertedUser.getFacebookId().equals(userFacebookId)){
+                        currentUser = convertedUser;
+                    }
+                }
+
+                Collections.sort(usersList, new Comparator<User>() {
+                    @Override
+                    public int compare(User lhs, User rhs) {
+                        return rhs.getCheeseCount() - lhs.getCheeseCount();
+                    }
+                });
+
+                callback.userRankingRetrieved(usersList.indexOf(currentUser) + 1, currentUser);
             }
 
             @Override
