@@ -149,33 +149,24 @@ public class FirebaseProxy  {
     }
 
     public static void getUserRanking(final String userFacebookId, final UserRankingCallback callback){
-        myCheezRef.child("users").
+        myCheezRef.child("users").orderByChild("cheeseCount").
         addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 Log.i(TAG, "retrieved all users");
-                Map<String, Object> users = (Map<String, Object>) snapshot.getValue();
-                Integer pos = new ArrayList<>(users.keySet()).indexOf(userFacebookId);
-                ObjectMapper mapper = new ObjectMapper();
-
-                List<User> usersList = new ArrayList<User>();
                 User currentUser = new User();
-                for (Object userObject : users.values()) {
-                    User convertedUser = mapper.convertValue(userObject, User.class);
-                    usersList.add(convertedUser);
-                    if (convertedUser.getFacebookId().equals(userFacebookId)){
-                        currentUser = convertedUser;
+                List<User> allUsers = new ArrayList<User>();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+                    User user = dataSnapshot.getValue(User.class);
+                    allUsers.add(user);
+                    if (user.getFacebookId().equals(userFacebookId)){
+                        currentUser = user;
                     }
                 }
 
-                Collections.sort(usersList, new Comparator<User>() {
-                    @Override
-                    public int compare(User lhs, User rhs) {
-                        return rhs.getCheeseCount() - lhs.getCheeseCount();
-                    }
-                });
+                int userRanking = allUsers.size() - allUsers.indexOf(currentUser);
 
-                callback.userRankingRetrieved(usersList.indexOf(currentUser) + 1, currentUser);
+                callback.userRankingRetrieved(userRanking, currentUser);
             }
 
             @Override
