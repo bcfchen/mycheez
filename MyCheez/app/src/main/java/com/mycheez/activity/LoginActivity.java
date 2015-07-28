@@ -1,11 +1,16 @@
 package com.mycheez.activity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -13,6 +18,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphRequestBatch;
@@ -24,10 +30,14 @@ import com.firebase.client.Firebase;
 import com.mycheez.R;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.firebase.FirebaseProxy;
+import com.mycheez.gcm.GcmRegistrationHelper;
+import com.mycheez.gcm.GcmPreferencesContants;
 import com.mycheez.model.User;
 import com.mycheez.util.AuthenticationHandler;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +54,8 @@ public class LoginActivity extends Activity {
     private LinearLayout loadingMsgSection;
     private static final String TAG = "loginActivity";
     private User currentUser = new User();
+    private GcmRegistrationHelper gcmRegisterer;
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +70,44 @@ public class LoginActivity extends Activity {
         authHandler.triggerOnActivityResult(requestCode, resultCode, data);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(GcmPreferencesContants.REGISTRATION_COMPLETE));
+    }
+
+    @Override
+    protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        super.onPause();
+    }
+
     private void initialize() {
         // initialize layouts
         initializeUIComponents();
         mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
+        gcmRegisterer = new GcmRegistrationHelper(this);
         doLoginAnimation();
         initializeAuthentication();
+        setupBroadcastListeners();
     }
+
+    private void setupBroadcastListeners() {
+        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+                boolean sentToken = sharedPreferences.getBoolean(GcmPreferencesContants.SENT_TOKEN_TO_SERVER, false);
+                if (sentToken) {
+                    Log.i(TAG, "Token update success");
+                } else {
+                    Log.i(TAG, "Token update failed");
+                }
+            }
+        };
+    }
+
 
     private void initializeAuthentication() {
         authHandler = new AuthenticationHandler();
@@ -121,8 +164,8 @@ public class LoginActivity extends Activity {
                             AuthData authData = mFirebaseRef.getAuth();
                             setAuthenticatedUser(authData);
                         } else {
-                        /* no user authenticated with Firebase
-                        * so display login button */
+                            /* no user authenticated with Firebase
+                            * so display login button */
                             LoginManager.getInstance().logOut();
                             loginFBButton.setVisibility(View.VISIBLE);
                             Animation animFade = AnimationUtils.loadAnimation(LoginActivity.this, R.anim.fade);
@@ -162,6 +205,11 @@ public class LoginActivity extends Activity {
                                 // Set the user object in Application scope
                                 MyCheezApplication.setCurrentUser(currentUser);
                                 FirebaseProxy.setupUserPresence(currentUser);
+
+                                saveUserIdToSharedPreferences(currentUser.getFacebookId());
+                                // register deivce with gcm and update firebase
+                                gcmRegisterer.registerGcmIfNecessary();
+
                                 startTheftActivity();
                             } else {
                                 Log.e(TAG, "Error upserting user data");
@@ -176,6 +224,12 @@ public class LoginActivity extends Activity {
         }
 
     }
+
+    private void saveUserIdToSharedPreferences(String facebookId) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.edit().putString(GcmPreferencesContants.USER_ID_SHARED_PREF_KEY, facebookId).apply();
+    }
+
 
     /**
      * Facebook graph api call to get Friends list of current user

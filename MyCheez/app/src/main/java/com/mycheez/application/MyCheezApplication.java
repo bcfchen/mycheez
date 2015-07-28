@@ -63,6 +63,7 @@ public class MyCheezApplication extends Application {
 
     public static void setCurrentUser(User currentUser) {
         MyCheezApplication.currentUser = currentUser;
+
     }
 
 

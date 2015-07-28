@@ -26,10 +26,13 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 import com.mycheez.R;
+import com.mycheez.application.MyCheezApplication;
 
 import java.io.IOException;
 
@@ -45,7 +48,8 @@ public class RegistrationIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
+        String userId = sharedPreferences.getString(GcmPreferencesContants.USER_ID_SHARED_PREF_KEY,
+                                                        MyCheezApplication.getCurrentUser().getFacebookId());
         try {
             // In the (unlikely) event that multiple refresh operations occur simultaneously,
             // ensure that they are processed sequentially.
@@ -60,27 +64,19 @@ public class RegistrationIntentService extends IntentService {
                 // [END get_token]
                 Log.i(TAG, "GCM Registration Token: " + token);
 
-                // TODO: Implement this method to send any registration to your app's servers.
-                sendRegistrationToServer(token);
-
-                // Subscribe to topic channels
-                subscribeTopics(token);
-
-                // You should store a boolean that indicates whether the generated token has been
-                // sent to your server. If the boolean is false, send the token to your server,
-                // otherwise your server should have already received the token.
-                sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, true).apply();
+                sendRegistrationToServer(token, userId, sharedPreferences);
                 // [END register_for_gcm]
             }
         } catch (Exception e) {
             Log.d(TAG, "Failed to complete token refresh", e);
             // If an exception happens while fetching the new token or updating our registration data
             // on a third-party server, this ensures that we'll attempt the update at a later time.
-            sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false).apply();
+            sharedPreferences.edit().putBoolean(GcmPreferencesContants.SENT_TOKEN_TO_SERVER, false).apply();
+            // Notify UI that registration has completed, so the progress indicator can be hidden.
+            Intent registrationComplete = new Intent(GcmPreferencesContants.REGISTRATION_COMPLETE);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
         }
-        // Notify UI that registration has completed, so the progress indicator can be hidden.
-        Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+
     }
 
     /**
@@ -90,9 +86,29 @@ public class RegistrationIntentService extends IntentService {
      * maintained by your application.
      *
      * @param token The new token.
+     * @param sharedPreferences
      */
-    private void sendRegistrationToServer(String token) {
-        // Add custom implementation, as needed.
+    private void sendRegistrationToServer(String token, String userId, final SharedPreferences sharedPreferences) {
+        Firebase myCheezRef = MyCheezApplication.getMyCheezFirebaseRef();
+        Firebase userPresenceNode = myCheezRef.child("presence").child(userId).child("gcmToken");
+        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        userPresenceNode.setValue(token, new Firebase.CompletionListener() {
+            @Override
+            public void onComplete(FirebaseError firebaseError, Firebase firebase) {
+                if(firebaseError == null){
+                    // You should store a boolean that indicates whether the generated token has been
+                    // sent to your server. If the boolean is false, send the token to your server,
+                    // otherwise your server should have already received the token.
+                    sharedPreferences.edit().putBoolean(GcmPreferencesContants.SENT_TOKEN_TO_SERVER, true).apply();
+                } else {
+                    sharedPreferences.edit().putBoolean(GcmPreferencesContants.SENT_TOKEN_TO_SERVER, false).apply();
+                }
+                // Notify UI that registration has completed, so the progress indicator can be hidden.
+                Intent registrationComplete = new Intent(GcmPreferencesContants.REGISTRATION_COMPLETE);
+                broadcastManager.sendBroadcast(registrationComplete);
+            }
+        });
+
     }
 
     /**

@@ -4,6 +4,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -62,9 +64,12 @@ public class NotificationListenerService extends GcmListenerService {
                 PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.cheese_stealing_4);
+
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.notification)
-                .setContentTitle("GCM Message")
+                .setSmallIcon(R.drawable.cheese_count_4)
+                .setLargeIcon(bm)
+                .setContentTitle(getString(R.string.app_name))
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
