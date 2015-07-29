@@ -2,8 +2,6 @@ package com.mycheez.firebase;
 
 import android.util.Log;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -14,15 +12,10 @@ import com.mycheez.model.History;
 import com.mycheez.model.User;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by ahetawal on 7/19/15.
@@ -156,10 +149,10 @@ public class FirebaseProxy  {
                 Log.i(TAG, "retrieved all users");
                 User currentUser = new User();
                 List<User> allUsers = new ArrayList<User>();
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     User user = dataSnapshot.getValue(User.class);
                     allUsers.add(user);
-                    if (user.getFacebookId().equals(userFacebookId)){
+                    if (user.getFacebookId().equals(userFacebookId)) {
                         currentUser = user;
                     }
                 }
@@ -182,13 +175,28 @@ public class FirebaseProxy  {
      * Firebase operation to insert the audit log of the theft history from the current user
      * @param victimId
      */
-    public static void insertTheftHistory(String victimId){
-        String currentUserName = MyCheezApplication.getCurrentUser().getFirstName();
+    public static void insertTheftHistory(final String victimId){
+        final String currentUserName = MyCheezApplication.getCurrentUser().getFirstName();
         Firebase currentUserRef = myCheezRef.child("history").child(victimId);
         History hist = new History();
         hist.setThiefName(currentUserName);
-        currentUserRef.push().setValue(hist);
+        currentUserRef.push().setValue(hist, new Firebase.CompletionListener() {
+            @Override
+            public void onComplete(FirebaseError firebaseError, Firebase firebase) {
+                if(firebaseError == null){
+                    insertAuditTrail(victimId, currentUserName);
+                }
+            }
+        });
 
+    }
+
+    public static void insertAuditTrail(String victimId, String currentUserName){
+        Firebase auditTrailRef = myCheezRef.child("audit_trail");
+        Map<String, String> auditTrail = new HashMap<String, String>();
+        auditTrail.put("victimId", victimId);
+        auditTrail.put("thiefName", currentUserName);
+        auditTrailRef.push().setValue(auditTrail);
     }
 
     /**
