@@ -2,7 +2,9 @@ package com.mycheez.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -20,6 +22,7 @@ import com.mycheez.adapter.UserViewAdapter;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.enums.UpdateType;
 import com.mycheez.firebase.FirebaseProxy;
+import com.mycheez.gcm.GcmPreferencesContants;
 import com.mycheez.model.User;
 import com.mycheez.util.AnimationHandler;
 import com.mycheez.util.CircularImageView;
@@ -35,7 +38,6 @@ public class TheftActivity extends Activity {
     private PlayersListAdapter playersListAdapter;
 	private HistoryListAdapter historyListAdapter;
 	private AnimationHandler animationHandler;
-	private UpdateType updateType;
 	private Firebase mFirebaseRef;
 	private String TAG = "theftActivity";
     private UserViewAdapter userViewAdapter;
@@ -48,14 +50,20 @@ public class TheftActivity extends Activity {
 
 		setContentView(R.layout.activity_theft);
 		Bundle extras = getIntent().getExtras();
-		String facebookId = extras.getString("facebookId");
+		String facebookId = getUserIdToSharedPreferences();
         currentUserFacebookId = facebookId;
 		initializeUtilities();
 		initializeUIControls();
 		setupUserFirebaseBindings();
         initializePlayersList();
 		initializeTheftHistoryList();
-		updateType = UpdateType.LOGIN;
+	}
+
+	/* retrieve user facebook id from shared pref */
+	private String getUserIdToSharedPreferences() {
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		String facebookId = sharedPreferences.getString(GcmPreferencesContants.USER_ID_SHARED_PREF_KEY, null);
+		return facebookId;
 	}
 
 	private void initializeUtilities() {
@@ -66,7 +74,7 @@ public class TheftActivity extends Activity {
 	public void onBackPressed() {
 		finish();
 		super.onBackPressed();
-    }
+	}
 
 	/* setup firebase binding to update user data */
 	private void setupUserFirebaseBindings(){

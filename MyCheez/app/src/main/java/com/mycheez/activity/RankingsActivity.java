@@ -1,7 +1,9 @@
 package com.mycheez.activity;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -16,6 +18,7 @@ import com.mycheez.R;
 import com.mycheez.adapter.RankingsListAdapter;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.firebase.FirebaseProxy;
+import com.mycheez.gcm.GcmPreferencesContants;
 import com.mycheez.model.User;
 import com.mycheez.util.CircleTransform;
 import com.squareup.picasso.Picasso;
@@ -37,12 +40,19 @@ public class RankingsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_rankings);
 		Bundle extras = getIntent().getExtras();
-		currentUserFacebookId = extras.getString("facebookId");
+		currentUserFacebookId = getUserIdToSharedPreferences();
         mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
 		initializeUIControls();
         initializeRankingsListView();
         initializeUserRanking();
     }
+
+	/* retrieve user facebook id from shared pref */
+	private String getUserIdToSharedPreferences() {
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		String facebookId = sharedPreferences.getString(GcmPreferencesContants.USER_ID_SHARED_PREF_KEY, null);
+		return facebookId;
+	}
 
 	private void initializeUIControls()
 	{
