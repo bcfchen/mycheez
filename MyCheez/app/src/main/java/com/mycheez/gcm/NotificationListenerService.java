@@ -14,6 +14,7 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
 import com.mycheez.R;
+import com.mycheez.activity.LoginActivity;
 import com.mycheez.activity.TheftActivity;
 
 /**
@@ -36,7 +37,12 @@ public class NotificationListenerService extends GcmListenerService {
         String message = data.getString("message");
         Log.d(TAG, "From: " + from);
         Log.d(TAG, "Message: " + message);
-
+        Intent newIntent = new Intent(this, LoginActivity.class);
+        newIntent.setAction(Long.toString(System.currentTimeMillis()));
+        newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        PendingIntent.getActivity(this, 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        startActivity(newIntent);
         /**
          * Production applications would usually process the message here.
          * Eg: - Syncing with server.

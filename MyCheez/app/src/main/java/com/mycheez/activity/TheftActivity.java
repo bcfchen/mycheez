@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.Query;
 import com.mycheez.R;
@@ -123,28 +124,28 @@ public class TheftActivity extends Activity {
 	private void initializeImageButtons() {
 		/* hook up refresh button to fetch data from Parse and populate views */
 		refreshImageView = (ImageView)findViewById(R.id.refreshImageView);
-		refreshImageView.setOnClickListener(new View.OnClickListener(){
-			@Override
-			public void onClick(View v) {
-			}
+		refreshImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            }
 
-		});
+        });
 
 		/* hook up rankings button to fetch ranking info from Parse and populate views */
 		rankingsImageView = (ImageView)findViewById(R.id.rankingImageView);
 		rankingsImageView.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
+            @Override
+            public void onClick(View v) {
                 Intent intent = new Intent(TheftActivity.this, RankingsActivity.class);
-                        try {
-                            intent.putExtra("facebookId", currentUserFacebookId);
-                            startActivity(intent);
-                        } catch (Exception ex){
-                            String asdf = ex.toString();
-                        }
-                    }
+                try {
+                    intent.putExtra("facebookId", currentUserFacebookId);
+                    startActivity(intent);
+                } catch (Exception ex) {
+                    String asdf = ex.toString();
+                }
+            }
 
-		});
+        });
 	}
 
     private void initializePlayersList(){
@@ -201,8 +202,18 @@ public class TheftActivity extends Activity {
 
 
     @Override
-    public void onStart() {
+    public void onResume(){
+        /* check if user's firebase credentials exist. if
+         * not, then redirect to login activity
+         */
+        super.onResume();
         MyCheezApplication.getMyCheezFirebaseRef().getApp().goOnline();
-        super.onStart();
+        AuthData authData = mFirebaseRef.getAuth();
+        if (authData == null) {
+            Intent intent = new Intent(TheftActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
+
 }
