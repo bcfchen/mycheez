@@ -202,18 +202,9 @@ public class TheftActivity extends Activity {
 
 
     @Override
-    public void onResume(){
-        /* check if user's firebase credentials exist. if
-         * not, then redirect to login activity
-         */
+    public void onStart(){
         super.onResume();
         MyCheezApplication.getMyCheezFirebaseRef().getApp().goOnline();
-        AuthData authData = mFirebaseRef.getAuth();
-        if (authData == null) {
-            Intent intent = new Intent(TheftActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }
     }
 
 }
