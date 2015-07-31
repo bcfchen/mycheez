@@ -73,6 +73,10 @@ public class LoginActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        /* make app go online. this is needed if app was in TheftActivity and
+         * put in background before, since that sets the app offline manually
+         */
+        MyCheezApplication.getMyCheezFirebaseRef().getApp().goOnline();
         LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
                 new IntentFilter(GcmPreferencesContants.REGISTRATION_COMPLETE));
     }
@@ -191,6 +195,7 @@ public class LoginActivity extends Activity {
             GraphRequest meFriendsListRequest = generateFriendListRequest();
             GraphRequestBatch batch = new GraphRequestBatch(meFriendsListRequest);
             batch.addCallback(new GraphRequestBatch.Callback() {
+
                 @Override
                 public void onBatchCompleted(GraphRequestBatch graphRequests) {
                     Log.i(TAG, "All requests completed. User is:  " + currentUser);

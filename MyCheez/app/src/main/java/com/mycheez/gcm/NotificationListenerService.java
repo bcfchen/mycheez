@@ -37,12 +37,7 @@ public class NotificationListenerService extends GcmListenerService {
         String message = data.getString("message");
         Log.d(TAG, "From: " + from);
         Log.d(TAG, "Message: " + message);
-        Intent newIntent = new Intent(this, LoginActivity.class);
-        newIntent.setAction(Long.toString(System.currentTimeMillis()));
-        newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        PendingIntent.getActivity(this, 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        startActivity(newIntent);
+
         /**
          * Production applications would usually process the message here.
          * Eg: - Syncing with server.
@@ -64,10 +59,9 @@ public class NotificationListenerService extends GcmListenerService {
      * @param message GCM message received.
      */
     private void sendNotification(String message) {
-        Intent intent = new Intent(this, TheftActivity.class);
+        Intent intent = new Intent(this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.cheese_stealing_4);
