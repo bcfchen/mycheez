@@ -15,6 +15,7 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmListenerService;
 import com.mycheez.R;
 import com.mycheez.activity.LoginActivity;
+import com.mycheez.activity.TheftActivity;
 
 /**
  * Created by ahetawal on 7/26/15.
@@ -58,7 +59,7 @@ public class NotificationListenerService extends GcmListenerService {
      * @param message GCM message received.
      */
     private void sendNotification(String message) {
-        Intent intent = new Intent(this, LoginActivity.class);
+        Intent intent = new Intent(this, TheftActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 

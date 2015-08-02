@@ -13,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.Query;
 import com.mycheez.R;
@@ -21,7 +20,6 @@ import com.mycheez.adapter.PlayersListAdapter;
 import com.mycheez.adapter.HistoryListAdapter;
 import com.mycheez.adapter.UserViewAdapter;
 import com.mycheez.application.MyCheezApplication;
-import com.mycheez.enums.UpdateType;
 import com.mycheez.firebase.FirebaseProxy;
 import com.mycheez.gcm.GcmPreferencesContants;
 import com.mycheez.model.User;
@@ -50,7 +48,6 @@ public class TheftActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_theft);
-		Bundle extras = getIntent().getExtras();
 		String facebookId = getUserIdToSharedPreferences();
         currentUserFacebookId = facebookId;
 		initializeUtilities();
@@ -100,7 +97,12 @@ public class TheftActivity extends Activity {
                 if (cheeseCount == null) {
                     Toast.makeText(TheftActivity.this, getString(R.string.get_user_cheese_failed_message), Toast.LENGTH_LONG).show();
                 } else {
-                    MyCheezApplication.getCurrentUser().setCheeseCount(cheeseCount);
+					/* null protect this. needed when we kill the app, then
+					 * launch from push notification
+					 */
+					if (MyCheezApplication.getCurrentUser() != null) {
+						MyCheezApplication.getCurrentUser().setCheeseCount(cheeseCount);
+					}
                     userViewAdapter.setCheeseCount(cheeseCount);
                 }
             }
@@ -196,14 +198,14 @@ public class TheftActivity extends Activity {
 
     @Override
     public void onPause() {
-        MyCheezApplication.getMyCheezFirebaseRef().getApp().goOffline();
-        super.onStop();
+		super.onStop();
+		MyCheezApplication.getMyCheezFirebaseRef().getApp().goOffline();
     }
 
 
     @Override
     public void onStart(){
-        super.onResume();
+        super.onStart();
         MyCheezApplication.getMyCheezFirebaseRef().getApp().goOnline();
     }
 
