@@ -15,7 +15,6 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmListenerService;
 import com.mycheez.R;
 import com.mycheez.activity.LoginActivity;
-import com.mycheez.activity.TheftActivity;
 
 /**
  * Created by ahetawal on 7/26/15.
@@ -78,6 +77,6 @@ public class NotificationListenerService extends GcmListenerService {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify((int) (System.currentTimeMillis() / 1000L), notificationBuilder.build());
     }
 }
