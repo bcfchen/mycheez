@@ -83,8 +83,10 @@ public class LoginActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        Log.e(TAG, "Login is destroyed");
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
-        super.onPause();
+        authHandler.getmFacebookAccessTokenTracker().stopTracking();
+        super.onDestroy();
     }
 
     private void initialize() {

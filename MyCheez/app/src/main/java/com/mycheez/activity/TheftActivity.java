@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.Query;
 import com.mycheez.R;
@@ -191,7 +192,7 @@ public class TheftActivity extends Activity {
 
 	@Override
 	public void onDestroy() {
-		System.out.println("Called destory...");
+        Log.e(TAG, "Theft is destroyed");
 		MyCheezApplication.setActivityisStopping();
 		super.onDestroy();
 	}
@@ -206,7 +207,14 @@ public class TheftActivity extends Activity {
     @Override
     public void onStart(){
         super.onStart();
-        MyCheezApplication.getMyCheezFirebaseRef().getApp().goOnline();
+        AuthData authData = MyCheezApplication.getMyCheezFirebaseRef().getAuth();
+        if(authData == null){
+            Intent newIntent = this.getPackageManager().getLaunchIntentForPackage(this.getPackageName());
+            this.startActivity(newIntent);
+            finish();
+        }else {
+            MyCheezApplication.getMyCheezFirebaseRef().getApp().goOnline();
+        }
     }
 
 }

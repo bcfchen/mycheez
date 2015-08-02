@@ -48,6 +48,10 @@ public class AuthenticationHandler {
 
     }
 
+    public AccessTokenTracker getmFacebookAccessTokenTracker() {
+        return mFacebookAccessTokenTracker;
+    }
+
     public void initializeFirebaseAuthentication(){
         mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
     }
