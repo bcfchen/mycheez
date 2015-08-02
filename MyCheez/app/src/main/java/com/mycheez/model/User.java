@@ -16,7 +16,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @JsonIgnoreProperties
-//@ToString(includeFieldNames=true)
+@ToString(includeFieldNames=true)
 public class User {
     private String facebookId;
     private int cheeseCount = 50;   // default cheese count
@@ -26,7 +26,7 @@ public class User {
     private String lastName;
     private String profilePicUrl;
     private Long updatedAt;
-    private Boolean isOnline;
+    private Boolean isOnline = true;
 
 
     public java.util.Map<String, String> getUpdatedAt() {
