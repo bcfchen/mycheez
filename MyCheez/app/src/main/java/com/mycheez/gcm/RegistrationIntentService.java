@@ -35,6 +35,8 @@ import com.mycheez.R;
 import com.mycheez.application.MyCheezApplication;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RegistrationIntentService extends IntentService {
 
@@ -90,12 +92,14 @@ public class RegistrationIntentService extends IntentService {
      */
     private void sendRegistrationToServer(String token, String userId, final SharedPreferences sharedPreferences) {
         Firebase myCheezRef = MyCheezApplication.getMyCheezFirebaseRef();
-        Firebase userPresenceNode = myCheezRef.child("presence").child(userId).child("gcmToken");
+        Firebase userPresenceNode = myCheezRef.child("presence").child(userId);
         final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-        userPresenceNode.setValue(token, new Firebase.CompletionListener() {
+        Map<String, Object> deviceToken = new HashMap<String, Object>();
+        deviceToken.put("gcmToken", token);
+        userPresenceNode.updateChildren(deviceToken, new Firebase.CompletionListener() {
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {
-                if(firebaseError == null){
+                if (firebaseError == null) {
                     // You should store a boolean that indicates whether the generated token has been
                     // sent to your server. If the boolean is false, send the token to your server,
                     // otherwise your server should have already received the token.

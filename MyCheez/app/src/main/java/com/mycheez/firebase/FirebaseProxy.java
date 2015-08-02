@@ -255,10 +255,17 @@ public class FirebaseProxy  {
      */
     public static void setupUserPresence(User current){
         Firebase firebaseConnectedRef = MyCheezApplication.getUserPresenceRef();
-        final Firebase userPresenceRefStatus = myCheezRef.child("presence").child(current.getFacebookId()).child("isOnline");
-        final Firebase userPresenceRefUpdatedAt = myCheezRef.child("presence").child(current.getFacebookId()).child("updatedAt");
+        final Firebase userPresenceRefStatus = myCheezRef.child("presence").child(current.getFacebookId());
+        final Firebase currentUserPresenceRef = myCheezRef.child("users").child(current.getFacebookId());
 
-        final Firebase currentUserPresenceRef = myCheezRef.child("users").child(current.getFacebookId()).child("isOnline");
+        final Map<String, Object> isOnlineMap = new HashMap<String, Object>();
+        isOnlineMap.put("isOnline", true);
+
+        final Map<String, Object> isOfflineMap = new HashMap<String, Object>();
+        isOfflineMap.put("isOnline", false);
+
+        final Map<String, Object> timsestampMap = new HashMap<String, Object>();
+        timsestampMap.put("updatedAt", ServerValue.TIMESTAMP);
 
         firebaseConnectedRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -266,12 +273,12 @@ public class FirebaseProxy  {
                 boolean connected = snapshot.getValue(Boolean.class);
                 if (connected) {
                     Log.i(TAG, "Device connected ");
-                    userPresenceRefStatus.setValue(Boolean.TRUE);
-                    currentUserPresenceRef.setValue((Boolean.TRUE));
+                    userPresenceRefStatus.updateChildren(isOnlineMap);
+                    currentUserPresenceRef.updateChildren(isOnlineMap);
 
-                    currentUserPresenceRef.onDisconnect().setValue(Boolean.FALSE);
-                    userPresenceRefStatus.onDisconnect().setValue(Boolean.FALSE);
-                    userPresenceRefUpdatedAt.onDisconnect().setValue(ServerValue.TIMESTAMP);
+                    currentUserPresenceRef.onDisconnect().updateChildren(isOfflineMap);
+                    userPresenceRefStatus.onDisconnect().updateChildren(isOfflineMap);
+                    userPresenceRefStatus.onDisconnect().updateChildren(timsestampMap);
                 } else {
                     Log.i(TAG, "Device dis-connected ");
                 }
