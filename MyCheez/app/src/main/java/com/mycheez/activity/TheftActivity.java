@@ -17,8 +17,8 @@ import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.Query;
 import com.mycheez.R;
-import com.mycheez.adapter.PlayersListAdapter;
 import com.mycheez.adapter.HistoryListAdapter;
+import com.mycheez.adapter.PlayersListAdapter;
 import com.mycheez.adapter.UserViewAdapter;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.firebase.FirebaseProxy;
@@ -105,6 +105,7 @@ public class TheftActivity extends Activity {
 						MyCheezApplication.getCurrentUser().setCheeseCount(cheeseCount);
 					}
                     userViewAdapter.setCheeseCount(cheeseCount);
+                    animationHandler.bounceCheeseCounters(userCheeseTextView);
                 }
             }
         });
@@ -144,7 +145,7 @@ public class TheftActivity extends Activity {
                     intent.putExtra("facebookId", currentUserFacebookId);
                     startActivity(intent);
                 } catch (Exception ex) {
-                    String asdf = ex.toString();
+                    Log.e(TAG, "Error launching rankings", ex);
                 }
             }
 
@@ -167,7 +168,7 @@ public class TheftActivity extends Activity {
 		historyList.setLayoutManager(llm);
 		historyListAdapter = new HistoryListAdapter(this, historyQuery);
 		historyList.setAdapter(historyListAdapter);
-	}
+    }
 
 
 	public void onCheeseTheft(View friendImageClicked, final User victim, ImageView movedCheeseImg){
