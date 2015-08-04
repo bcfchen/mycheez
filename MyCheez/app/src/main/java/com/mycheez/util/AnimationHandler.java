@@ -1,6 +1,7 @@
 package com.mycheez.util;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.os.Vibrator;
 import android.view.View;
 import android.view.animation.Animation;
@@ -15,6 +16,7 @@ import com.mycheez.R;
 public class AnimationHandler {
 	
 	private Context activityContext;
+
 	public AnimationHandler(Context activityContext)
 	{
 		this.activityContext = activityContext;
@@ -50,6 +52,7 @@ public class AnimationHandler {
 			public void onAnimationEnd(Animation animation) {
 				movedCheeseImg.setVisibility(View.GONE);
 				wobbleImageView(userProfileImageView);
+                TheftSoundsPlayer.playSoundOnSteal(activityContext);
 			}
 		};
 
@@ -73,8 +76,6 @@ public class AnimationHandler {
     private void wobbleImageView(View imageView) {
         Animation animationWobble  = AnimationUtils.loadAnimation(activityContext, R.anim.wobble);
         imageView.startAnimation(animationWobble);
-        Vibrator v = (Vibrator) activityContext.getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(250);
     }
     
     public void fadeIn(View view)
