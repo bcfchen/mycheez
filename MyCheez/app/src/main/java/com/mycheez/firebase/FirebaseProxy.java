@@ -233,7 +233,7 @@ public class FirebaseProxy  {
                         currentUserRef.setPriority(-newThiefCheeseCount);
                         currentUserRef.updateChildren(thiefCheeseCountMap);
 
-                        thief.setCheeseCount(newThiefCheeseCount);
+                        //thief.setCheeseCount(newThiefCheeseCount);
                         theftCallback.cheeseTheftPerformed(true);
                     } else {
                         Log.e(TAG, "Error performing theft: " + firebaseError.getMessage());

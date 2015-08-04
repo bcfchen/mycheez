@@ -6,18 +6,37 @@ import android.media.MediaPlayer;
 import android.os.Vibrator;
 
 import com.mycheez.R;
+import com.mycheez.enums.CheeseCountChangeType;
 
 public class TheftSoundsPlayer {
+    private MediaPlayer mediaPlayer;
+
+    public void playSoundOnCheeseChange(Context context, CheeseCountChangeType changeType){
+        // don't do anything if isUserThief is null
+        if (changeType == null){ return;}
+
+        switch(changeType){
+            case STEAL:
+                playSoundOnSteal(context);
+                break;
+            case STOLEN:
+                playSoundOnStolen(context);
+                break;
+            case NO_CHANGE:
+                break;
+        }
+    }
+
     /* play sound when user steals someone's cheese */
-    public static void playSoundOnSteal(Context context){
-        MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.chime_bell_ding);
+    private void playSoundOnSteal(Context context){
+        mediaPlayer = MediaPlayer.create(context, R.raw.chime_bell_ding);
         playAudioOrVibrate(context, mediaPlayer);
     }
 
 
     /* play sound when someone steals user's cheese */
-    public static void playSoundOnStolen(Context context){
-        MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.chime_bell_ding);
+    private void playSoundOnStolen(Context context){
+        mediaPlayer = MediaPlayer.create(context, R.raw.pop_drip);
         playAudioOrVibrate(context, mediaPlayer);
     }
 

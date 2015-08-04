@@ -12,14 +12,17 @@ import android.widget.ImageView;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.mycheez.R;
+import com.mycheez.enums.CheeseCountChangeType;
 
 public class AnimationHandler {
 	
 	private Context activityContext;
+    private TheftSoundsPlayer theftSoundsPlayer;
 
 	public AnimationHandler(Context activityContext)
 	{
 		this.activityContext = activityContext;
+        theftSoundsPlayer = new TheftSoundsPlayer();
 	}
 	
 	public void startAnimateRefresh(View view) {
@@ -52,7 +55,6 @@ public class AnimationHandler {
 			public void onAnimationEnd(Animation animation) {
 				movedCheeseImg.setVisibility(View.GONE);
 				wobbleImageView(userProfileImageView);
-                TheftSoundsPlayer.playSoundOnSteal(activityContext);
 			}
 		};
 
@@ -68,7 +70,7 @@ public class AnimationHandler {
 		viewItemClicked.getLocationOnScreen(origPos);
 
 		Animations anim = new Animations();
-		Animation a = anim.fromAtoB(origPos[0],origPos[1], destPos[0], destPos[1], animL, 300);
+		Animation a = anim.fromAtoB(origPos[0], origPos[1], destPos[0], destPos[1], animL, 300);
 		movedCheeseImg.setVisibility(View.VISIBLE);
 		movedCheeseImg.startAnimation(a);
 	}
@@ -82,9 +84,14 @@ public class AnimationHandler {
     {
     	YoYo.with(Techniques.FadeIn).duration(3000).playOn(view);
     }
-    
-    public void bounceCheeseCounters(View ... views) {
-    	for(int i = 0; i< views.length; i++){
+
+    public void handleUserCheeseCountChanged(CheeseCountChangeType cheeseCountChangeType, View ... views){
+        theftSoundsPlayer.playSoundOnCheeseChange(activityContext, cheeseCountChangeType);
+        bounceCheeseCounters(views);
+    }
+
+    private void bounceCheeseCounters(View ... views) {
+        for(int i = 0; i< views.length; i++){
     		YoYo.with(Techniques.Bounce).duration(1000).playOn(views[i]);
     	}
 		

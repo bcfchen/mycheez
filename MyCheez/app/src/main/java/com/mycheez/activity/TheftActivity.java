@@ -21,6 +21,7 @@ import com.mycheez.adapter.HistoryListAdapter;
 import com.mycheez.adapter.PlayersListAdapter;
 import com.mycheez.adapter.UserViewAdapter;
 import com.mycheez.application.MyCheezApplication;
+import com.mycheez.enums.CheeseCountChangeType;
 import com.mycheez.firebase.FirebaseProxy;
 import com.mycheez.gcm.GcmPreferencesContants;
 import com.mycheez.model.User;
@@ -80,37 +81,54 @@ public class TheftActivity extends Activity {
 		mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
 		// make single call to retrieve info for current user once
 		FirebaseProxy.getUserData(currentUserFacebookId, new FirebaseProxy.UserDataCallback() {
-            @Override
-            public void userDataRetrieved(User user) {
-                if (user == null) {
-                    Toast.makeText(TheftActivity.this, getString(R.string.get_user_failed_message), Toast.LENGTH_LONG).show();
-                } else {
-                    MyCheezApplication.setCurrentUser(user);
-                    userViewAdapter.setUser(user);
-                }
-            }
-        });
+			@Override
+			public void userDataRetrieved(User user) {
+				if (user == null) {
+					Toast.makeText(TheftActivity.this, getString(R.string.get_user_failed_message), Toast.LENGTH_LONG).show();
+				} else {
+					MyCheezApplication.setCurrentUser(user);
+					userViewAdapter.setUser(user);
+				}
+			}
+		});
 
 		// bind cheese count
 		FirebaseProxy.getUserCheeseCount(currentUserFacebookId, new FirebaseProxy.UserCheeseCountCallback() {
-            @Override
-            public void userCheeseCountRetrieved(Integer cheeseCount) {
-                if (cheeseCount == null) {
-                    Toast.makeText(TheftActivity.this, getString(R.string.get_user_cheese_failed_message), Toast.LENGTH_LONG).show();
-                } else {
+			@Override
+			public void userCheeseCountRetrieved(Integer cheeseCount) {
+				if (cheeseCount == null) {
+					Toast.makeText(TheftActivity.this, getString(R.string.get_user_cheese_failed_message), Toast.LENGTH_LONG).show();
+				} else {
+					Integer oldCheeseCount = MyCheezApplication.getCurrentUser() != null ?
+							MyCheezApplication.getCurrentUser().getCheeseCount() : null;
+					CheeseCountChangeType cheeseCountChangeType = getChangeType(oldCheeseCount, cheeseCount);
+
 					/* null protect this. needed when we kill the app, then
 					 * launch from push notification
 					 */
 					if (MyCheezApplication.getCurrentUser() != null) {
 						MyCheezApplication.getCurrentUser().setCheeseCount(cheeseCount);
 					}
-                    userViewAdapter.setCheeseCount(cheeseCount);
-                    animationHandler.bounceCheeseCounters(userCheeseTextView);
-                }
-            }
-        });
+
+					userViewAdapter.setCheeseCount(cheeseCount);
+					animationHandler.handleUserCheeseCountChanged(cheeseCountChangeType, userCheeseTextView);
+				}
+			}
+		});
 	}
 
+	private CheeseCountChangeType getChangeType(Integer oldCheeseCount, Integer newCheeseCount){
+		if (oldCheeseCount == null){
+			return null;
+		} else if (newCheeseCount > oldCheeseCount){
+			return CheeseCountChangeType.STEAL;
+		} else if (newCheeseCount < oldCheeseCount){
+			return CheeseCountChangeType.STOLEN;
+		} else {
+			return CheeseCountChangeType.NO_CHANGE;
+		}
+
+	}
     
 	private void initializeUIControls() {
 		initializeUserView();
@@ -193,7 +211,7 @@ public class TheftActivity extends Activity {
 
 	@Override
 	public void onDestroy() {
-        Log.e(TAG, "Theft is destroyed");
+		Log.e(TAG, "Theft is destroyed");
 		MyCheezApplication.setActivityisStopping();
 		super.onDestroy();
 	}
