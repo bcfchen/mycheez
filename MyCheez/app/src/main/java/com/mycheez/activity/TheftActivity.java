@@ -120,7 +120,7 @@ public class TheftActivity extends Activity {
 	private CheeseCountChangeType getChangeType(Integer oldCheeseCount, Integer newCheeseCount){
 		if (oldCheeseCount == null){
 			return null;
-		} else if (newCheeseCount > oldCheeseCount){
+		} else if (newCheeseCount >= oldCheeseCount){
 			return CheeseCountChangeType.STEAL;
 		} else if (newCheeseCount < oldCheeseCount){
 			return CheeseCountChangeType.STOLEN;

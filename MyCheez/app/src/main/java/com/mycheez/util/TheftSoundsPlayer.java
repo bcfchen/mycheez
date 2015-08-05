@@ -43,14 +43,18 @@ public class TheftSoundsPlayer {
     /* either play sound or vibrate phone depending on user's phone settings */
     private static void playAudioOrVibrate(Context context, MediaPlayer mediaPlayer){
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+
         switch (audioManager.getRingerMode()){
             case AudioManager.RINGER_MODE_VIBRATE:
-                Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
                 v.vibrate(250);
                 break;
             case AudioManager.RINGER_MODE_NORMAL:
                 setupOnCompletion(mediaPlayer);
                 mediaPlayer.start();
+                v.vibrate(250);
+                break;
+            case AudioManager.RINGER_MODE_SILENT:
                 break;
         }
     }
