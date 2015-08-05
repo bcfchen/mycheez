@@ -2,9 +2,7 @@ package com.mycheez.activity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -26,8 +24,9 @@ import com.mycheez.firebase.FirebaseProxy;
 import com.mycheez.gcm.GcmPreferencesContants;
 import com.mycheez.model.User;
 import com.mycheez.util.AnimationHandler;
+import com.mycheez.util.CheeseCountChangeTypeHelper;
 import com.mycheez.util.CircularImageView;
-import com.mycheez.util.NotificationSettingService;
+import com.mycheez.util.SharedPreferencesService;
 import com.mycheez.util.RecyclerViewLinearLayoutManager;
 
 public class TheftActivity extends Activity {
@@ -44,32 +43,24 @@ public class TheftActivity extends Activity {
 	private String TAG = "theftActivity";
     private UserViewAdapter userViewAdapter;
     private String currentUserFacebookId;
-    private NotificationSettingService notificationSettingService;
+    private SharedPreferencesService sharedPreferencesService;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_theft);
-		String facebookId = getUserIdToSharedPreferences();
-        currentUserFacebookId = facebookId;
-		initializeUtilities();
+        initializeUtilities();
+        currentUserFacebookId = sharedPreferencesService.getUserIdToSharedPreferences();
 		initializeUIControls();
 		setupUserFirebaseBindings();
         initializePlayersList();
 		initializeTheftHistoryList();
 	}
 
-	/* retrieve user facebook id from shared pref */
-	private String getUserIdToSharedPreferences() {
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		String facebookId = sharedPreferences.getString(GcmPreferencesContants.USER_ID_SHARED_PREF_KEY, null);
-		return facebookId;
-	}
-
 	private void initializeUtilities() {
 		this.animationHandler = new AnimationHandler(this);
-        notificationSettingService = new NotificationSettingService(this);
+        sharedPreferencesService = new SharedPreferencesService(this);
 	}
 
 	@Override
@@ -103,7 +94,7 @@ public class TheftActivity extends Activity {
 				} else {
 					Integer oldCheeseCount = MyCheezApplication.getCurrentUser() != null ?
 							MyCheezApplication.getCurrentUser().getCheeseCount() : null;
-					CheeseCountChangeType cheeseCountChangeType = getChangeType(oldCheeseCount, cheeseCount);
+					CheeseCountChangeType cheeseCountChangeType = CheeseCountChangeTypeHelper.getChangeType(oldCheeseCount, cheeseCount);
 
 					/* null protect this. needed when we kill the app, then
 					 * launch from push notification
@@ -117,19 +108,6 @@ public class TheftActivity extends Activity {
 				}
 			}
 		});
-	}
-
-	private CheeseCountChangeType getChangeType(Integer oldCheeseCount, Integer newCheeseCount){
-		if (oldCheeseCount == null){
-			return null;
-		} else if (newCheeseCount >= oldCheeseCount){
-			return CheeseCountChangeType.STEAL;
-		} else if (newCheeseCount < oldCheeseCount){
-			return CheeseCountChangeType.STOLEN;
-		} else {
-			return CheeseCountChangeType.NO_CHANGE;
-		}
-
 	}
     
 	private void initializeUIControls() {
@@ -151,7 +129,7 @@ public class TheftActivity extends Activity {
 		notificationImageView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-                Boolean newNotificationSetting = notificationSettingService.toggleNotificationSetting();
+                Boolean newNotificationSetting = sharedPreferencesService.toggleNotificationSetting();
                 if (newNotificationSetting){
                     notificationImageView.setImageResource(R.drawable.referesh);
                 } else {

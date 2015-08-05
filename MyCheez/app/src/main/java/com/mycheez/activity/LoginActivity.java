@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
@@ -34,6 +32,7 @@ import com.mycheez.gcm.GcmRegistrationHelper;
 import com.mycheez.gcm.GcmPreferencesContants;
 import com.mycheez.model.User;
 import com.mycheez.util.AuthenticationHandler;
+import com.mycheez.util.SharedPreferencesService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,6 +55,7 @@ public class LoginActivity extends Activity {
     private User currentUser = new User();
     private GcmRegistrationHelper gcmRegisterer;
     private BroadcastReceiver mRegistrationBroadcastReceiver;
+    private SharedPreferencesService sharedPreferencesService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +94,7 @@ public class LoginActivity extends Activity {
         initializeUIComponents();
         mFirebaseRef = MyCheezApplication.getRootFirebaseRef();
         gcmRegisterer = new GcmRegistrationHelper(this);
+        sharedPreferencesService = new SharedPreferencesService(this);
         doLoginAnimation();
         initializeAuthentication();
         setupBroadcastListeners();
@@ -213,7 +214,7 @@ public class LoginActivity extends Activity {
                                 MyCheezApplication.setCurrentUser(currentUser);
                                 FirebaseProxy.setupUserPresence(currentUser);
 
-                                saveUserIdToSharedPreferences(currentUser.getFacebookId());
+                                sharedPreferencesService.saveUserIdToSharedPreferences(currentUser.getFacebookId());
                                 // register deivce with gcm and update firebase
                                 gcmRegisterer.registerGcmIfNecessary();
 
@@ -231,12 +232,6 @@ public class LoginActivity extends Activity {
         }
 
     }
-
-    private void saveUserIdToSharedPreferences(String facebookId) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.edit().putString(GcmPreferencesContants.USER_ID_SHARED_PREF_KEY, facebookId).apply();
-    }
-
 
     /**
      * Facebook graph api call to get Friends list of current user
@@ -284,15 +279,6 @@ public class LoginActivity extends Activity {
 
     private void hideLoadingMsgSection() {
         loadingMsgSection.setVisibility(View.GONE);
-    }
-
-    private void checkNetworkAvailability() {
-        ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-        if (networkInfo == null) {
-            Toast.makeText(this, R.string.no_network_message, Toast.LENGTH_LONG).show();
-            startTheftActivity();
-        }
     }
 
     private void startTheftActivity() {

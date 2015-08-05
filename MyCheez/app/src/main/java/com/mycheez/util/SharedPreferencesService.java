@@ -6,10 +6,10 @@ import android.preference.PreferenceManager;
 
 import com.mycheez.gcm.GcmPreferencesContants;
 
-public class NotificationSettingService {
+public class SharedPreferencesService {
     private SharedPreferences sharedPreferences;
 
-    public NotificationSettingService(Context context){
+    public SharedPreferencesService(Context context){
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
@@ -21,8 +21,13 @@ public class NotificationSettingService {
         return updatedNotificationSetting;
     }
 
-    public void setNotificationSetting(Boolean enable){
-        sharedPreferences.edit().putBoolean(GcmPreferencesContants.NOTIFICATION_SETTING, enable).apply();
+    public void saveUserIdToSharedPreferences(String facebookId) {
+        sharedPreferences.edit().putString(GcmPreferencesContants.USER_ID_SHARED_PREF_KEY, facebookId).apply();
+    }
+
+    public String getUserIdToSharedPreferences() {
+        String facebookId = sharedPreferences.getString(GcmPreferencesContants.USER_ID_SHARED_PREF_KEY, null);
+        return facebookId;
     }
 
     public Boolean getNotificationSetting(){
