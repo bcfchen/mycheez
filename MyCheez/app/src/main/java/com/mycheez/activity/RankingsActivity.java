@@ -31,7 +31,6 @@ public class RankingsActivity extends Activity {
 	ImageView backButtonImageView;
 	ImageView shareButtonImageView;
 	View backButtonContainer;
-	int userCheeseCount;
 	String currentUserFacebookId;
     private Firebase mFirebaseRef;
 
@@ -39,7 +38,6 @@ public class RankingsActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_rankings);
-		Bundle extras = getIntent().getExtras();
 		currentUserFacebookId = getUserIdToSharedPreferences();
         mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
 		initializeUIControls();

@@ -16,6 +16,7 @@ import com.google.android.gms.gcm.GcmListenerService;
 import com.mycheez.R;
 import com.mycheez.activity.LoginActivity;
 import com.mycheez.activity.TheftActivity;
+import com.mycheez.util.NotificationSettingService;
 
 /**
  * Created by ahetawal on 7/26/15.
@@ -37,7 +38,7 @@ public class NotificationListenerService extends GcmListenerService {
         String message = data.getString("message");
         Log.d(TAG, "From: " + from);
         Log.d(TAG, "Message: " + message);
-
+        NotificationSettingService notificationSettingService = new NotificationSettingService(this);
         /**
          * Production applications would usually process the message here.
          * Eg: - Syncing with server.
@@ -47,9 +48,12 @@ public class NotificationListenerService extends GcmListenerService {
 
         /**
          * In some cases it may be useful to show a notification indicating to the user
-         * that a message was received.
+         * that a message was received. Do so if notification is enabled
          */
-        sendNotification(message);
+        Boolean notificationEnabled = notificationSettingService.getNotificationSetting();
+        if (notificationEnabled) {
+            sendNotification(message);
+        }
     }
     // [END receive_message]
 

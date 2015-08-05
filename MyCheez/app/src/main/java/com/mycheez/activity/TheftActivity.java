@@ -27,12 +27,13 @@ import com.mycheez.gcm.GcmPreferencesContants;
 import com.mycheez.model.User;
 import com.mycheez.util.AnimationHandler;
 import com.mycheez.util.CircularImageView;
+import com.mycheez.util.NotificationSettingService;
 import com.mycheez.util.RecyclerViewLinearLayoutManager;
 
 public class TheftActivity extends Activity {
 	CircularImageView userProfileImageView;
 	TextView userCheeseTextView;
-	ImageView refreshImageView;
+	ImageView notificationImageView;
 	ImageView rankingsImageView;
     private RecyclerView playersList;
 	private RecyclerView historyList;
@@ -43,7 +44,7 @@ public class TheftActivity extends Activity {
 	private String TAG = "theftActivity";
     private UserViewAdapter userViewAdapter;
     private String currentUserFacebookId;
-
+    private NotificationSettingService notificationSettingService;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +69,7 @@ public class TheftActivity extends Activity {
 
 	private void initializeUtilities() {
 		this.animationHandler = new AnimationHandler(this);
+        notificationSettingService = new NotificationSettingService(this);
 	}
 
 	@Override
@@ -145,13 +147,19 @@ public class TheftActivity extends Activity {
 	/* hook up image button clicks */
 	private void initializeImageButtons() {
 		/* hook up refresh button to fetch data from Parse and populate views */
-		refreshImageView = (ImageView)findViewById(R.id.refreshImageView);
-		refreshImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            }
+		notificationImageView = (ImageView)findViewById(R.id.notificationsImageView);
+		notificationImageView.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+                Boolean newNotificationSetting = notificationSettingService.toggleNotificationSetting();
+                if (newNotificationSetting){
+                    notificationImageView.setImageResource(R.drawable.referesh);
+                } else {
+                    notificationImageView.setImageResource(R.drawable.setting_4);
+                }
+			}
 
-        });
+		});
 
 		/* hook up rankings button to fetch ranking info from Parse and populate views */
 		rankingsImageView = (ImageView)findViewById(R.id.rankingImageView);
