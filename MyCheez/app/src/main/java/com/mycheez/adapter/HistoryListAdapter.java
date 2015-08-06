@@ -44,20 +44,21 @@ public class HistoryListAdapter extends RecyclerView.Adapter<HistoryListAdapter.
                 historyMap.put(dataSnapshot.getKey(), model);
 
                 // Insert into the correct location, based on previousChildName
+                int newIdx = 0;
                 if (previousChildName == null) {
-                    historyList.add(0, model);
+                    historyList.add(newIdx, model);
                 } else {
                     History previousModel = historyMap.get(previousChildName);
                     int previousIndex = historyList.indexOf(previousModel);
                     int nextIndex = previousIndex + 1;
+                    newIdx = nextIndex;
                     if (nextIndex == historyList.size()) {
                         historyList.add(model);
                     } else {
                         historyList.add(nextIndex, model);
                     }
                 }
-
-                notifyDataSetChanged();
+                notifyItemInserted(newIdx);
             }
 
             @Override

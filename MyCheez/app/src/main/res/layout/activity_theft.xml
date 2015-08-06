@@ -136,39 +136,11 @@
         android:layout_height="fill_parent"
         android:clipChildren="false"
         android:clipToPadding="false">
-        <LinearLayout
-            android:id="@+id/countDownContainer"
-            android:layout_width="fill_parent"
-            android:layout_marginTop="20dp"
-            android:layout_height="30dp"
-            android:gravity="center"
-            android:background="#fff"
-            android:alpha="0.8"
-            android:visibility="gone"
-            android:orientation="horizontal">
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent">
-                <ImageView
-                    android:id="@+id/clockImageVIew"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:src="@drawable/timer" />
-                <TextView
-                    android:id="@+id/countDownTimer"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="left"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="#00C7D8"/>
-            </LinearLayout>
-        </LinearLayout>
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/playersList"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:divider="@android:color/transparent"
             android:scrollbars="none"
             android:clipChildren="false"
