@@ -35,6 +35,8 @@
     <string name="refresh_finished_message">Finished Updating!</string>
     <string name="get_user_failed_message">Failed to retrieve user. Please restart your app :(</string>
     <string name="get_user_cheese_failed_message">Failed to retrieve your cheese. Please restart your app :(</string>
+    <string name="notifications_on">Notifications On</string>
+    <string name="notifications_off">Notifications Off</string>
 
     <!-- FlyingCheeseActivity -->
     <string name="thief_facebookId">thiefFacebookId</string>

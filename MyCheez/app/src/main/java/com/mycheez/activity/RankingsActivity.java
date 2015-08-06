@@ -29,7 +29,6 @@ public class RankingsActivity extends Activity {
     RecyclerView rankingsListView;
 	TextView userRankingTextView;
 	ImageView backButtonImageView;
-	ImageView shareButtonImageView;
 	View backButtonContainer;
 	String currentUserFacebookId;
     private Firebase mFirebaseRef;
@@ -64,38 +63,7 @@ public class RankingsActivity extends Activity {
 			}
 
 		});
-		
-		shareButtonImageView = (ImageView) findViewById(R.id.shareButtonImageView);
-//		shareButtonImageView.setOnClickListener(new OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				shareFacebookMessage();
-//			}
-//
-//		});
 	}
-
-	/* commenting this out for now. this is for sharing on facebook */
-//	private void shareFacebookMessage()
-//	{
-//		String playStoreLinkUrl = getResources().getString(R.string.play_store_link);
-//		String shareMessage = String.format("I got %S cheese, try snatching them from me!", Integer.toString(userCheeseCount));
-//		Bundle params = new Bundle();
-//		params.putString("caption", "caption");
-//		params.putString("message", shareMessage);
-//		params.putString("link", playStoreLinkUrl);
-//
-//		Request request = new Request(Session.getActiveSession(), "me/feed", params, HttpMethod.POST);
-//		request.setCallback(new Request.Callback() {
-//		    @Override
-//		    public void onCompleted(Response response) {
-//		        if (response.getError() == null) {
-//		            // Tell the user success!
-//		        }
-//		    }
-//		});
-//		request.executeAsync();
-//	}
 
 	private void populateUserRanking(int ranking, User currentUser)
 	{

@@ -31,6 +31,7 @@ public class TheftActivity extends Activity {
 	TextView userCheeseTextView;
 	ImageView notificationImageView;
 	ImageView rankingsImageView;
+    TextView notificationSettingTextView;
     private RecyclerView playersList;
 	private RecyclerView historyList;
     private PlayersListAdapter playersListAdapter;
@@ -70,7 +71,7 @@ public class TheftActivity extends Activity {
 	private void setupUserFirebaseBindings(){
 		mFirebaseRef = MyCheezApplication.getMyCheezFirebaseRef();
 		// make single call to retrieve info for current user once
-		FirebaseProxy.getUserData(currentUserFacebookId, new FirebaseProxy.UserDataCallback() {
+        FirebaseProxy.getUserData(currentUserFacebookId, new FirebaseProxy.UserDataCallback() {
             @Override
             public void userDataRetrieved(User user) {
                 if (user == null) {
@@ -135,15 +136,15 @@ public class TheftActivity extends Activity {
 	/* hook up image button clicks */
 	private void initializeImageButtons() {
 		/* hook up refresh button to fetch data from Parse and populate views */
-		notificationImageView = (ImageView)findViewById(R.id.notificationsImageView);
-		notificationImageView.setOnClickListener(new View.OnClickListener() {
+        notificationSettingTextView = (TextView) findViewById(R.id.notificationSettingTextView);
+        notificationSettingTextView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
                 Boolean newNotificationSetting = sharedPreferencesService.toggleNotificationSetting();
                 if (newNotificationSetting){
-                    notificationImageView.setImageResource(R.drawable.referesh);
+                    notificationSettingTextView.setText(getString(R.string.notifications_on));
                 } else {
-                    notificationImageView.setImageResource(R.drawable.setting_4);
+                    notificationSettingTextView.setText(getString(R.string.notifications_off));
                 }
 			}
 
