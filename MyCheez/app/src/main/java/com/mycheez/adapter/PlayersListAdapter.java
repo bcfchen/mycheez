@@ -7,8 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,14 +14,16 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.Query;
+import com.firebase.client.ValueEventListener;
 import com.mycheez.R;
 import com.mycheez.activity.TheftActivity;
+import com.mycheez.application.MyCheezApplication;
 import com.mycheez.model.User;
 import com.mycheez.util.CircularImageView;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,53 +32,69 @@ import java.util.Map;
  */
 public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.PlayerViewHolder> {
 
-    private List<User> players;
+    private LinkedList<User> players;
     private Map<String, User> playerMap;
-    private ChildEventListener mListener;
-    private Query mRef;
+    private ChildEventListener childListener;
     private Activity theftActivity;
     private String TAG = "PlayersList";
     private Map<Integer, Boolean> onClickLockMap;
-    private Animation pulseAnimation;
+    private Query allUsersRef = MyCheezApplication.getMyCheezFirebaseRef().child("users");
+    private boolean isFirstTimeLoaded = true;
 
-    public PlayersListAdapter(Activity activity, Query query, final String currentUserFacebookId) {
+    public PlayersListAdapter(Activity activity, final User currentUser) {
         this.theftActivity = activity;
-        players = new ArrayList<>();
+        players = new LinkedList<>();
         playerMap =  new HashMap<>();
         onClickLockMap = new HashMap<>();
+        final String currentUserFacebookId = currentUser.getFacebookId();
+        final List<String> currentUserFriendsList = currentUser.getFriends();
 
-        pulseAnimation = AnimationUtils.loadAnimation(theftActivity, R.anim.pulse);
+        allUsersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    User model = child.getValue(User.class);
+                    // Dont add the current user to the players list
+                    if(currentUserFacebookId.equals(model.getFacebookId())){
+                        continue;
+                    }
+                    if(currentUserFriendsList.contains(model.getFacebookId())){
+                        players.addFirst(model);
+                    }else {
+                        players.addLast(model);
+                    }
+                    playerMap.put(child.getKey(), model);
+                }
+                for(int i = 0; i < players.size(); i++){
+                    onClickLockMap.put(i, true);
+                }
+                setUpChildListeners(currentUser);
+            }
 
-        mRef = query;
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.e("PlayerListAdapter", "All users data listener error "+ firebaseError.getDetails());
+            }
+        });
+    }
 
-        mListener = this.mRef.addChildEventListener(new ChildEventListener() {
+    private void setUpChildListeners(final User currentUser) {
+        childListener = allUsersRef.addChildEventListener(new ChildEventListener() {
 
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 User model = dataSnapshot.getValue(User.class);
 
-                // Dont add the current user to the players list
-                if(currentUserFacebookId.equals(model.getFacebookId())){
+                // skipping all initial child added calls
+                if(playerMap.containsKey(dataSnapshot.getKey()) ||
+                        currentUser.getFacebookId().equals(dataSnapshot.getKey())){
                     return;
                 }
-
                 playerMap.put(dataSnapshot.getKey(), model);
-                // Insert into the correct location, based on previousChildName
-                int nextIndex = 0;
-                if (previousChildName == null) {
-                    players.add(nextIndex, model);
-                } else {
-                    User previousModel = playerMap.get(previousChildName);
-                    int previousIndex = players.indexOf(previousModel);
-                    nextIndex = previousIndex + 1;
-                    if (nextIndex == players.size()) {
-                        players.add(model);
-                    } else {
-                        players.add(nextIndex, model);
-                    }
-                }
-                onClickLockMap.put(nextIndex, true);
-                notifyItemInserted(nextIndex);
+                players.addLast(model);
+                int size = players.size();
+                onClickLockMap.put(size, true);
+                notifyItemInserted(size);
             }
 
             @Override
@@ -86,7 +102,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                 // One of the mModels changed. Replace it in our list and name mapping
                 String modelName = dataSnapshot.getKey();
                 // Dont add the current user to the players list
-                if(currentUserFacebookId.equals(modelName)){
+                if(currentUser.getFacebookId().equals(modelName)){
                     return;
                 }
 
@@ -97,7 +113,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                 players.set(index, newModel);
                 playerMap.put(modelName, newModel);
 
-               // notifyDataSetChanged();
+                // notifyDataSetChanged();
                 notifyItemChanged(index);
             }
 
@@ -122,12 +138,11 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
             }
 
         });
-
     }
 
     public void cleanup() {
         // We're being destroyed, let go of our mListener and forget about all of the mModels
-        mRef.removeEventListener(mListener);
+        allUsersRef.removeEventListener(childListener);
         players.clear();
         playerMap.clear();
     }
@@ -154,7 +169,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                     public void run() {
                         handleOnClickLock(false, tempHolder, position);
                     }
-                }, 3000);
+                }, 2000);
             }
         });
         return cvh;

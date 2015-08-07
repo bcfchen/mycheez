@@ -46,4 +46,22 @@ public class User {
         return String.format(MyCheezApplication.PROFILE_PIC_URL, this.facebookId);
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        return facebookId.equals(user.facebookId);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return facebookId.hashCode();
+    }
+
+
 }

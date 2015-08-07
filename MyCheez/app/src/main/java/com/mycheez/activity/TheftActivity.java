@@ -15,6 +15,7 @@ import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.Query;
 import com.mycheez.R;
+import com.mycheez.adapter.DividerItemDecoration;
 import com.mycheez.adapter.HistoryListAdapter;
 import com.mycheez.adapter.PlayersListAdapter;
 import com.mycheez.adapter.UserViewAdapter;
@@ -34,8 +35,7 @@ public class TheftActivity extends Activity {
     TextView notificationSettingTextView;
     private RecyclerView playersList;
 	private RecyclerView historyList;
-    private PlayersListAdapter playersListAdapter;
-	private HistoryListAdapter historyListAdapter;
+    private HistoryListAdapter historyListAdapter;
 	private AnimationHandler animationHandler;
 	private Firebase mFirebaseRef;
 	private String TAG = "theftActivity";
@@ -79,49 +79,23 @@ public class TheftActivity extends Activity {
                 } else {
                     MyCheezApplication.setCurrentUser(user);
                     userViewAdapter.setUser(user);
+
+                    // setup playerlist data after getting latest data
+                    int dividerLocation = user.getFriends().size();
+                    playersList.addItemDecoration(new DividerItemDecoration(TheftActivity.this, R.drawable.divider, false, false, dividerLocation));
+                    PlayersListAdapter playersListAdapter = new PlayersListAdapter(TheftActivity.this, user);
+                    playersList.setAdapter(playersListAdapter);
+
+
                 }
             }
         });
 
-		// bind cheese count
-		FirebaseProxy.getUserCheeseCount(currentUserFacebookId, new FirebaseProxy.UserCheeseCountCallback() {
-            @Override
-            public void userCheeseCountRetrieved(Integer cheeseCount) {
-                if (cheeseCount == null) {
-                    Toast.makeText(TheftActivity.this, getString(R.string.get_user_cheese_failed_message), Toast.LENGTH_LONG).show();
-                } else {
-                    Integer oldCheeseCount = MyCheezApplication.getCurrentUser() != null ?
-                            MyCheezApplication.getCurrentUser().getCheeseCount() : null;
-                    CheeseCountChangeType cheeseCountChangeType = getChangeType(oldCheeseCount, cheeseCount);
-
-					/* null protect this. needed when we kill the app, then
-					 * launch from push notification
-					 */
-                    if (MyCheezApplication.getCurrentUser() != null) {
-                        MyCheezApplication.getCurrentUser().setCheeseCount(cheeseCount);
-                    }
-
-                    userViewAdapter.setCheeseCount(cheeseCount);
-                    animationHandler.handleUserCheeseCountChanged(cheeseCountChangeType, userCheeseTextView);
-                }
-            }
-        });
-	}
-
-    public CheeseCountChangeType getChangeType(Integer oldCheeseCount, Integer newCheeseCount){
-        if (oldCheeseCount == null){
-            return null;
-        } else if (newCheeseCount >= oldCheeseCount){
-            return CheeseCountChangeType.STEAL;
-        } else if (newCheeseCount < oldCheeseCount){
-            return CheeseCountChangeType.STOLEN;
-        } else {
-            return CheeseCountChangeType.NO_CHANGE;
-        }
+        setUpCheeseCountListener();
     }
 
 
-	private void initializeUIControls() {
+    private void initializeUIControls() {
 		initializeUserView();
 		initializeImageButtons();
 	}
@@ -167,13 +141,10 @@ public class TheftActivity extends Activity {
         });
 	}
 
-    private void initializePlayersList(){
-        playersList= ( RecyclerView )findViewById( R.id.playersList );
-        Query playersQuery = mFirebaseRef.child("users");
+    private void initializePlayersList() {
+        playersList = (RecyclerView) findViewById(R.id.playersList);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         playersList.setLayoutManager(llm);
-        playersListAdapter = new PlayersListAdapter(this, playersQuery, currentUserFacebookId);
-        playersList.setAdapter(playersListAdapter);
     }
 
 	private void initializeTheftHistoryList(){
@@ -185,6 +156,43 @@ public class TheftActivity extends Activity {
 		historyList.setAdapter(historyListAdapter);
     }
 
+    private void setUpCheeseCountListener() {
+        // bind cheese count
+        FirebaseProxy.getUserCheeseCount(currentUserFacebookId, new FirebaseProxy.UserCheeseCountCallback() {
+            @Override
+            public void userCheeseCountRetrieved(Integer cheeseCount) {
+                if (cheeseCount == null) {
+                    Toast.makeText(TheftActivity.this, getString(R.string.get_user_cheese_failed_message), Toast.LENGTH_LONG).show();
+                } else {
+                    Integer oldCheeseCount = MyCheezApplication.getCurrentUser() != null ?
+                            MyCheezApplication.getCurrentUser().getCheeseCount() : null;
+                    CheeseCountChangeType cheeseCountChangeType = getChangeType(oldCheeseCount, cheeseCount);
+
+                    /* null protect this. needed when we kill the app, then
+                     * launch from push notification
+                     */
+                    if (MyCheezApplication.getCurrentUser() != null) {
+                        MyCheezApplication.getCurrentUser().setCheeseCount(cheeseCount);
+                    }
+
+                    userViewAdapter.setCheeseCount(cheeseCount);
+                    animationHandler.handleUserCheeseCountChanged(cheeseCountChangeType, userCheeseTextView);
+                }
+            }
+        });
+    }
+
+    public CheeseCountChangeType getChangeType(Integer oldCheeseCount, Integer newCheeseCount){
+        if (oldCheeseCount == null){
+            return null;
+        } else if (newCheeseCount >= oldCheeseCount){
+            return CheeseCountChangeType.STEAL;
+        } else if (newCheeseCount < oldCheeseCount){
+            return CheeseCountChangeType.STOLEN;
+        } else {
+            return CheeseCountChangeType.NO_CHANGE;
+        }
+    }
 
 	public void onCheeseTheft(View friendImageClicked, final User victim, ImageView movedCheeseImg){
 
