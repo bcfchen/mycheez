@@ -32,7 +32,6 @@ public class TheftActivity extends Activity {
 	TextView userCheeseTextView;
 	ImageView notificationImageView;
 	ImageView rankingsImageView;
-    TextView notificationSettingTextView;
     private RecyclerView playersList;
 	private RecyclerView historyList;
     private HistoryListAdapter historyListAdapter;
@@ -110,15 +109,15 @@ public class TheftActivity extends Activity {
 	/* hook up image button clicks */
 	private void initializeImageButtons() {
 		/* hook up refresh button to fetch data from Parse and populate views */
-        notificationSettingTextView = (TextView) findViewById(R.id.notificationSettingTextView);
-        notificationSettingTextView.setOnClickListener(new View.OnClickListener() {
+        notificationImageView = (ImageView) findViewById(R.id.notificationSettings);
+        notificationImageView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
                 Boolean newNotificationSetting = sharedPreferencesService.toggleNotificationSetting();
                 if (newNotificationSetting){
-                    notificationSettingTextView.setText(getString(R.string.notifications_on));
+                    notificationImageView.setImageResource(R.drawable.notifications_on);
                 } else {
-                    notificationSettingTextView.setText(getString(R.string.notifications_off));
+                    notificationImageView.setImageResource(R.drawable.notifications_off);
                 }
 			}
 

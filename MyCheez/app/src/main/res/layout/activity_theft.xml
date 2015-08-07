@@ -31,15 +31,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ranking_4" />
-                <TextView
-                    android:id="@+id/notificationSettingTextView"
+                <ImageView
+                    android:id="@+id/notificationSettings"
+                    android:layout_gravity="center_vertical"
                     android:layout_alignParentRight="true"
                     android:layout_marginLeft="15dp"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:text="Notifications On"/>
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/notifications_on"/>
+
             </LinearLayout>
         </LinearLayout>
 
