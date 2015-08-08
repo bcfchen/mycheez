@@ -12,5 +12,6 @@ import lombok.ToString;
 @ToString(includeFieldNames=true)
 public class History {
     private String thiefName;
+    private String thiefId;
 
 }

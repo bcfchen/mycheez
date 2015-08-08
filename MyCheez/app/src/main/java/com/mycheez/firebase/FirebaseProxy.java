@@ -177,9 +177,11 @@ public class FirebaseProxy  {
      */
     public static void insertTheftHistory(final String victimId){
         final String currentUserName = MyCheezApplication.getCurrentUser().getFirstName();
+        final String currentUserId = MyCheezApplication.getCurrentUser().getFacebookId();
         Firebase currentUserRef = myCheezRef.child("history").child(victimId);
         History hist = new History();
         hist.setThiefName(currentUserName);
+        hist.setThiefId(currentUserId);
         currentUserRef.push().setValue(hist, new Firebase.CompletionListener() {
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {

@@ -7,11 +7,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.Query;
 import com.mycheez.R;
+import com.mycheez.activity.TheftActivity;
 import com.mycheez.model.History;
 
 import java.util.ArrayList;
@@ -29,12 +31,14 @@ public class HistoryListAdapter extends RecyclerView.Adapter<HistoryListAdapter.
     private ChildEventListener mListener;
     private Query mRef;
     private Activity activity;
+    private TheftActivity.PlayerListScroller scroller;
 
-    public HistoryListAdapter(Activity activity, Query query) {
+    public HistoryListAdapter(Activity activity, Query query, TheftActivity.PlayerListScroller playerListScroller) {
         this.activity = activity;
         historyList = new ArrayList<>();
         historyMap =  new HashMap<>();
         mRef = query;
+        scroller = playerListScroller;
 
         mListener = this.mRef.addChildEventListener(new ChildEventListener() {
 
@@ -109,7 +113,15 @@ public class HistoryListAdapter extends RecyclerView.Adapter<HistoryListAdapter.
     @Override
     public HistoryViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.history_row, viewGroup, false);
-        HistoryViewHolder cvh = new HistoryViewHolder(v);
+        HistoryViewHolder cvh = new HistoryViewHolder(v, new HistoryViewHolder.HistoryOnClicks() {
+            @Override
+            public void doOnClick(HistoryViewHolder holder) {
+                final HistoryViewHolder tempHolder = holder;
+                final int position = tempHolder.getPosition();
+                History thief = historyList.get(position);
+                scroller.scrollPlayerList(thief.getThiefId());
+            }
+        });
         return cvh;
     }
 
@@ -124,15 +136,28 @@ public class HistoryListAdapter extends RecyclerView.Adapter<HistoryListAdapter.
         return historyList.size();
     }
 
-    public static class HistoryViewHolder extends RecyclerView.ViewHolder {
+    public static class HistoryViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener{
 
         TextView friendNameTextView;
         TextView stoleCheeseTextView;
+        HistoryOnClicks clickListener;
 
-        HistoryViewHolder(View itemView) {
+        HistoryViewHolder(View itemView, HistoryOnClicks listener) {
             super(itemView);
             friendNameTextView = (TextView) itemView.findViewById(R.id.friendNameTextview);
             stoleCheeseTextView=(TextView)itemView.findViewById(R.id.stoleCheeseTextView);
+            clickListener = listener;
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            clickListener.doOnClick(this);
+        }
+
+
+        public interface HistoryOnClicks {
+            void doOnClick(HistoryViewHolder holder);
         }
     }
 

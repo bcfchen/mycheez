@@ -27,6 +27,9 @@ import com.mycheez.util.AnimationHandler;
 import com.mycheez.util.CircularImageView;
 import com.mycheez.util.SharedPreferencesService;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TheftActivity extends Activity {
 	CircularImageView userProfileImageView;
 	TextView userCheeseTextView;
@@ -41,6 +44,7 @@ public class TheftActivity extends Activity {
     private UserViewAdapter userViewAdapter;
     private String currentUserFacebookId;
     private SharedPreferencesService sharedPreferencesService;
+    private Map<String, Integer> playerListScrollLocationMap = new HashMap<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,10 +53,11 @@ public class TheftActivity extends Activity {
 		setContentView(R.layout.activity_theft);
         initializeUtilities();
         currentUserFacebookId = sharedPreferencesService.getUserIdToSharedPreferences();
-		initializeUIControls();
-		setupUserFirebaseBindings();
+
+        initializeUIControls();
+        setupUserFirebaseBindings();
         initializePlayersList();
-		initializeTheftHistoryList();
+        initializeTheftHistoryList();
 	}
 
 	private void initializeUtilities() {
@@ -82,7 +87,7 @@ public class TheftActivity extends Activity {
                     // setup playerlist data after getting latest data
                     int dividerLocation = user.getFriends().size();
                     playersList.addItemDecoration(new DividerItemDecoration(TheftActivity.this, R.drawable.divider, false, false, dividerLocation));
-                    PlayersListAdapter playersListAdapter = new PlayersListAdapter(TheftActivity.this, user);
+                    PlayersListAdapter playersListAdapter = new PlayersListAdapter(TheftActivity.this, user, playerListScrollLocationMap);
                     playersList.setAdapter(playersListAdapter);
 
 
@@ -151,7 +156,15 @@ public class TheftActivity extends Activity {
         Query historyQuery = mFirebaseRef.child("history").child(currentUserFacebookId).orderByKey().limitToLast(5);
         LinearLayoutManager llm = new org.solovyev.android.views.llm.LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 		historyList.setLayoutManager(llm);
-		historyListAdapter = new HistoryListAdapter(this, historyQuery);
+		historyListAdapter = new HistoryListAdapter(this, historyQuery, new PlayerListScroller() {
+            @Override
+            public void scrollPlayerList(String thiefId) {
+                Integer location = playerListScrollLocationMap.get(thiefId);
+                if(location != null) {
+                    playersList.smoothScrollToPosition(location);
+                }
+            }
+        });
 		historyList.setAdapter(historyListAdapter);
     }
 
@@ -238,6 +251,12 @@ public class TheftActivity extends Activity {
         }else {
             MyCheezApplication.getMyCheezFirebaseRef().getApp().goOnline();
         }
+    }
+
+    public interface PlayerListScroller {
+
+        void scrollPlayerList(String thiefId);
+
     }
 
 }

@@ -40,12 +40,15 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
     private Map<Integer, Boolean> onClickLockMap;
     private Query allUsersRef = MyCheezApplication.getMyCheezFirebaseRef().child("users");
     private boolean isFirstTimeLoaded = true;
+    private Map<String, Integer> listLocationMap;
 
-    public PlayersListAdapter(Activity activity, final User currentUser) {
+    public PlayersListAdapter(Activity activity, final User currentUser, Map<String, Integer> playerListScrollLocationMap) {
         this.theftActivity = activity;
         players = new LinkedList<>();
         playerMap =  new HashMap<>();
         onClickLockMap = new HashMap<>();
+        listLocationMap = playerListScrollLocationMap;
+
         final String currentUserFacebookId = currentUser.getFacebookId();
         final List<String> currentUserFriendsList = currentUser.getFriends();
 
@@ -66,6 +69,8 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                     playerMap.put(child.getKey(), model);
                 }
                 for(int i = 0; i < players.size(); i++){
+                    User u = players.get(i);
+                    listLocationMap.put(u.getFacebookId(), i);
                     onClickLockMap.put(i, true);
                 }
                 setUpChildListeners(currentUser);
@@ -94,6 +99,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                 players.addLast(model);
                 int size = players.size();
                 onClickLockMap.put(size, true);
+                listLocationMap.put(dataSnapshot.getKey(), size);
                 notifyItemInserted(size);
             }
 
@@ -123,6 +129,7 @@ public class PlayersListAdapter extends RecyclerView.Adapter<PlayersListAdapter.
                 String modelName = dataSnapshot.getKey();
                 User oldModel = playerMap.get(modelName);
                 players.remove(oldModel);
+                listLocationMap.remove(modelName);
                 playerMap.remove(modelName);
                 notifyDataSetChanged();
             }
