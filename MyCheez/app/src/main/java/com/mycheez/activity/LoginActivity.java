@@ -19,7 +19,6 @@ import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
-import com.facebook.GraphRequestBatch;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.widget.LoginButton;
@@ -28,8 +27,8 @@ import com.firebase.client.Firebase;
 import com.mycheez.R;
 import com.mycheez.application.MyCheezApplication;
 import com.mycheez.firebase.FirebaseProxy;
-import com.mycheez.gcm.GcmRegistrationHelper;
 import com.mycheez.gcm.GcmPreferencesContants;
+import com.mycheez.gcm.GcmRegistrationHelper;
 import com.mycheez.model.User;
 import com.mycheez.util.AuthenticationHandler;
 import com.mycheez.util.SharedPreferencesService;
@@ -131,7 +130,7 @@ public class LoginActivity extends Activity {
             @Override
             public void firebaseAuthenticationValidated(Boolean isValid, AuthData authData) {
                 if (isValid) {
-                    setAuthenticatedUser(authData);
+                    setAuthenticatedUser(authData, null);
                 } else {
                     Toast.makeText(LoginActivity.this, getString(R.string.login_failed_message), Toast.LENGTH_LONG).show();
                 }
@@ -166,10 +165,10 @@ public class LoginActivity extends Activity {
             public void onAnimationEnd(Animation arg0) {
                 authHandler.validateUserAuthentication(new AuthenticationHandler.UserAuthenticationValidated() {
                     @Override
-                    public void userAuthenticationValidated(Boolean isValid) {
+                    public void userAuthenticationValidated(Boolean isValid, List<String> friends) {
                         if (isValid) {
                             AuthData authData = mFirebaseRef.getAuth();
-                            setAuthenticatedUser(authData);
+                            setAuthenticatedUser(authData, friends);
                         } else {
                             /* no user authenticated with Firebase
                             * so display login button */
@@ -191,46 +190,78 @@ public class LoginActivity extends Activity {
      * 2. Call Facebook graph api to get friends list
      * 3. Upsert current user in Firebase
      */
-    private void setAuthenticatedUser(AuthData authData) {
+    private void setAuthenticatedUser(AuthData authData, List<String> friends) {
         if (authData != null) {
             showLoadingMsgSection(getString(R.string.prep_steal_zone_message));
             populateProfileInfoForUser(authData);
-            GraphRequest meFriendsListRequest = generateFriendListRequest();
-            GraphRequestBatch batch = new GraphRequestBatch(meFriendsListRequest);
-            batch.addCallback(new GraphRequestBatch.Callback() {
-
-                @Override
-                public void onBatchCompleted(GraphRequestBatch graphRequests) {
-                    Log.i(TAG, "All requests completed. User is:  " + currentUser);
-
-                    // Save to Firebase
-                    FirebaseProxy.upsertCurrentUser(currentUser, new FirebaseProxy.UpsertUserCallBack() {
-                        @Override
-                        public void isUpsertSuccess(boolean isSuccess) {
-                            Log.i(TAG, "Completed");
-                            hideLoadingMsgSection();
-                            if (isSuccess) {
-                                // Set the user object in Application scope
-                                MyCheezApplication.setCurrentUser(currentUser);
-                                FirebaseProxy.setupUserPresence(currentUser);
-
-                                sharedPreferencesService.saveUserIdToSharedPreferences(currentUser.getFacebookId());
-                                // register deivce with gcm and update firebase
-                                gcmRegisterer.registerGcmIfNecessary();
-
-                                startTheftActivity();
-                            } else {
-                                Log.e(TAG, "Error upserting user data");
-                                Toast.makeText(LoginActivity.this, getString(R.string.upsert_failed_message), Toast.LENGTH_LONG).show();
-                            }
-
-                        }
-                    });
-                }
-            });
-            batch.executeAsync();
+            if(friends!=null){
+                currentUser.setFriends(friends);
+                setUpFirebaseAndLaunchTheft();
+            } else {
+                getFriendsListFromFacebook();
+            }
         }
 
+    }
+
+    private void getFriendsListFromFacebook() {
+        authHandler.authUserAndGetFacebookFriendsList(facebookAuthenticateCallback());
+
+    }
+
+
+    private GraphRequest.GraphJSONArrayCallback facebookAuthenticateCallback() {
+        GraphRequest.GraphJSONArrayCallback graphApiCallback = new GraphRequest.GraphJSONArrayCallback() {
+            List<String> friendsList = new ArrayList<>();
+
+            @Override
+            public void onCompleted(JSONArray jsonArray, GraphResponse response) {
+                // invoke callback with true/false based on authentication response from facebook
+                if (response.getError() == null){
+                    try {
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            // get friends Facebook ids
+                            friendsList.add(jsonArray.getJSONObject(i).getString("id"));
+                        }
+                    } catch (JSONException e) {
+                        Log.e(TAG, "Error parsing friends request ", e);
+                    }
+                } else {
+                    Log.e(TAG, "Facebook error response Type : " + response.getError().getErrorType());
+                    Log.e(TAG, "Facebook error response details : " + response.getError().getErrorMessage());
+                }
+                currentUser.setFriends(friendsList);
+                setUpFirebaseAndLaunchTheft();
+            }
+        };
+
+        return graphApiCallback;
+    }
+
+    private void setUpFirebaseAndLaunchTheft() {
+        // Save to Firebase
+        FirebaseProxy.upsertCurrentUser(currentUser, new FirebaseProxy.UpsertUserCallBack() {
+            @Override
+            public void isUpsertSuccess(boolean isSuccess) {
+                Log.i(TAG, "Completed");
+                hideLoadingMsgSection();
+                if (isSuccess) {
+                    // Set the user object in Application scope
+                    MyCheezApplication.setCurrentUser(currentUser);
+                    FirebaseProxy.setupUserPresence(currentUser);
+
+                    sharedPreferencesService.saveUserIdToSharedPreferences(currentUser.getFacebookId());
+                    // register deivce with gcm and update firebase
+                    gcmRegisterer.registerGcmIfNecessary();
+
+                    startTheftActivity();
+                } else {
+                    Log.e(TAG, "Error upserting user data");
+                    Toast.makeText(LoginActivity.this, getString(R.string.upsert_failed_message), Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
     }
 
     /**

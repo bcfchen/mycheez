@@ -1,7 +1,6 @@
 package com.mycheez.util;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.facebook.AccessToken;
@@ -14,9 +13,12 @@ import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.mycheez.application.MyCheezApplication;
 
-import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /* class that handles facebook/firebase authentication */
 public class AuthenticationHandler {
@@ -103,28 +105,42 @@ public class AuthenticationHandler {
 
         // declare user credentials invalid if firebase creds not valid
         if (firebaseAuthData == null){
-            callback.userAuthenticationValidated(false);
+            callback.userAuthenticationValidated(false, null);
             return;
         }
+        authUserAndGetFacebookFriendsList(facebookAuthenticateCallback(callback));
 
-        // now check with facebook given existing access token
-        GraphRequest request = GraphRequest.newMeRequest(
-                AccessToken.getCurrentAccessToken(),
-                new GraphRequest.GraphJSONObjectCallback() {
-                    @Override
-                    public void onCompleted(JSONObject object, GraphResponse response) {
-                        // invoke callback with true/false based on authentication response from facebook
-                        if (response.getError() == null){
-                            callback.userAuthenticationValidated(true);
-                        } else {
-                            callback.userAuthenticationValidated(false);
+    }
+
+    private GraphRequest.GraphJSONArrayCallback facebookAuthenticateCallback(final UserAuthenticationValidated userAuthenticatedCallback) {
+        GraphRequest.GraphJSONArrayCallback graphApiCallback = new GraphRequest.GraphJSONArrayCallback() {
+            @Override
+            public void onCompleted(JSONArray jsonArray, GraphResponse response) {
+                List<String> friendsList = new ArrayList<>();
+                // invoke callback with true/false based on authentication response from facebook
+                if (response.getError() == null){
+                    try {
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            // get friends Facebook ids
+                            friendsList.add(jsonArray.getJSONObject(i).getString("id"));
                         }
+                    } catch (JSONException e) {
+                        Log.e(TAG, "Error parsing friends request ", e);
                     }
-                });
+                    userAuthenticatedCallback.userAuthenticationValidated(true, friendsList);
+                } else {
+                    Log.e(TAG, "Facebook error response Type : " + response.getError().getErrorType());
+                    Log.e(TAG, "Facebook error response details : " + response.getError().getErrorMessage());
+                    userAuthenticatedCallback.userAuthenticationValidated(false, null);
+                }
+            }
+        };
 
-        Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,name,link");
-        request.setParameters(parameters);
+        return graphApiCallback;
+    }
+
+    public void authUserAndGetFacebookFriendsList(GraphRequest.GraphJSONArrayCallback callback){
+        GraphRequest request = GraphRequest.newMyFriendsRequest(AccessToken.getCurrentAccessToken(), callback);
         request.executeAsync();
     }
 
@@ -137,7 +153,7 @@ public class AuthenticationHandler {
     }
 
     public interface UserAuthenticationValidated{
-        void userAuthenticationValidated(Boolean isValid);
+        void userAuthenticationValidated(Boolean isValid, List<String> friendsList);
     }
 
 
