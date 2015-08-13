@@ -120,9 +120,9 @@ public class TheftActivity extends Activity {
 			public void onClick(View v) {
                 Boolean newNotificationSetting = sharedPreferencesService.toggleNotificationSetting();
                 if (newNotificationSetting){
-                    notificationImageView.setImageResource(R.drawable.notifications_on);
+                    notificationImageView.setImageResource(R.drawable.notification_on_white);
                 } else {
-                    notificationImageView.setImageResource(R.drawable.notifications_off);
+                    notificationImageView.setImageResource(R.drawable.notification_off_white);
                 }
 			}
 
