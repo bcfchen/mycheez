@@ -115,15 +115,13 @@ public class TheftActivity extends Activity {
 	private void initializeImageButtons() {
 		/* hook up refresh button to fetch data from Parse and populate views */
         notificationImageView = (ImageView) findViewById(R.id.notificationSettings);
+        setNotificationIconState();
+
         notificationImageView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-                Boolean newNotificationSetting = sharedPreferencesService.toggleNotificationSetting();
-                if (newNotificationSetting){
-                    notificationImageView.setImageResource(R.drawable.notification_on_white);
-                } else {
-                    notificationImageView.setImageResource(R.drawable.notification_off_white);
-                }
+                sharedPreferencesService.toggleNotificationSetting();
+                setNotificationIconState();
 			}
 
 		});
@@ -144,6 +142,15 @@ public class TheftActivity extends Activity {
 
         });
 	}
+
+    private void setNotificationIconState(){
+        boolean state = sharedPreferencesService.getNotificationSetting();
+        if (state){
+            notificationImageView.setImageResource(R.drawable.notification_on_white);
+        } else {
+            notificationImageView.setImageResource(R.drawable.notification_off_white);
+        }
+    }
 
     private void initializePlayersList() {
         playersList = (RecyclerView) findViewById(R.id.playersList);
